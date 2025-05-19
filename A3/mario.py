@@ -3,6 +3,13 @@ from menu import Menu
 from game import Game
 
 
+AZUL = (135, 206, 235)
+VERDE = (34, 139, 34)
+BRANCO = (255, 255, 255)
+VERDE_CLARO = (0, 200, 0)
+
+
+
 class Main:
     
     def __init__(self, sizex, sizey, title):
