@@ -13,6 +13,12 @@ class Obj:
         self.sprite.rect[1] = y
         self.frame = 1
         self.tick = 0
+
+        # Carregar imagem do Mario
+        mario_img = pg.image.load("mario.png").convert_alpha()
+        mario_rect = mario_img.get_rect()
+        mario_rect.topleft = (100, 800 - 150)
+
     
     def drawing(self, window):
         self.group.draw(window)

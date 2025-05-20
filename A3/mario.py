@@ -2,12 +2,7 @@ import pygame as pg
 from menu import Menu
 from game import Game
 
-
-AZUL = (135, 206, 235)
-VERDE = (34, 139, 34)
-BRANCO = (255, 255, 255)
-VERDE_CLARO = (0, 200, 0)
-
+pg.init()
 
 
 class Main:
@@ -45,5 +40,5 @@ class Main:
             self.events()
             pg.display.update()
 
-game = Main(360, 640, "Mario Bros")
+game = Main(800, 600, "Mario Bros")
 game.update()
