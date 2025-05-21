@@ -4,41 +4,44 @@ from game import Game
 
 pg.init()
 
-
 class Main:
-    
-    def __init__(self, sizex, sizey, title):
 
+    def __init__(self, sizex, sizey, title):
+        self.sizex = sizex
+        self.sizey = sizey
         self.window = pg.display.set_mode([sizex, sizey])
-        self.title = pg.display.set_caption(title)
+        pg.display.set_caption(title)
 
         self.menu = Menu()
-        self.game = Game()
+        self.game = Game(sizex, sizey)
 
         self.loop = True
         self.fps = pg.time.Clock()
 
     def draw(self):
-        self.window.fill([0, 0, 0])
+        self.window.fill((0, 0, 0))
         if not self.menu.change_scene:
             self.menu.draw(self.window)
-        elif not self.game.change_scene:
+        else:
             self.game.draw(self.window)
             self.game.update()
 
     def events(self):
-        for events in pg.event.get():
-            if events.type == pg.QUIT:
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
                 self.loop = False
-            
-            self.menu.events(events)
+
+            if not self.menu.change_scene:
+                self.menu.events(event)
+            else:
+                self.game.events(event)
 
     def update(self):
         while self.loop:
-            self.fps.tick(10)
+            self.fps.tick(60)
             self.draw()
             self.events()
             pg.display.update()
 
-game = Main(800, 600, "Mario Bros")
+game = Main(400, 300, "Mario Bros")
 game.update()
