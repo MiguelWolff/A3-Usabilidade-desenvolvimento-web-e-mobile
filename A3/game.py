@@ -1,50 +1,74 @@
 import pygame as pg
 from obj import Obj
-import random
+from enemies import Goomba
 
 AZUL = (135, 206, 235)
 VERDE = (34, 139, 34)
-BRANCO = (255, 255, 255)
-VERDE_CLARO = (0, 200, 0)
 
 class Game:
-    def __init__(self):
-        pass
+    def __init__(self, largura, altura):
+        self.LARGURA = largura
+        self.ALTURA = altura
 
-    def jogo():
-    
-        vel_x = 0
-        gravidade = 1
-        vel_y = 0
-        no_chao = True
+        self.change_scene = False
+        self.gravidade = 1
+        self.vel_y = 0
+        self.vel_x = 0
+        self.no_chao = True
 
-        rodando = True
+        # Mario
+        self.mario = Obj("Assets/Sprites/Mario.png", 50, altura - 120)
 
-    def controles():
-        # Controles
-        teclas = pg.key.get_pressed()
-        vel_x = 0
-        if teclas[pg.K_LEFT]:
-            vel_x = -5
-        if teclas[pg.K_RIGHT]:
-            vel_x = 5
-        if teclas[pg.K_SPACE] and no_chao:
-            vel_y = -15
-            no_chao = False
+        # Goomba
+        self.goomba = Goomba(250, altura - 45)
+        self.goomba_vivo = True
 
-        # Movimento
-        mario_rect.x += vel_x
-        mario_rect.y += vel_y
-        vel_y += gravidade
+    def draw(self, window):
+        window.fill(AZUL)
 
-        # Colisão com chão
-        if mario_rect.bottom >= ALTURA - 50:
-            mario_rect.bottom = ALTURA - 50
-            vel_y = 0
-            no_chao = True
+        # Chão
+        pg.draw.rect(window, VERDE, (0, self.ALTURA - 30, self.LARGURA, 30))
 
-        # Desenha chão
-        pygame.draw.rect(tela, VERDE, (0, ALTURA - 50, LARGURA, 50))
+        # Mario
+        self.mario.draw(window)
 
-        # Desenha Mario
-        tela.blit(mario_img, mario_rect)
+        # Goomba
+        if self.goomba_vivo:
+            self.goomba.draw(window)
+
+    def update(self):
+        # Atualizar posição do Mario
+        self.mario.update_position(self.vel_x, self.vel_y)
+        self.vel_y += self.gravidade
+
+        mario_rect = self.mario.get_rect()
+        if mario_rect.bottom >= self.ALTURA - 30:
+            mario_rect.bottom = self.ALTURA - 30
+            self.vel_y = 0
+            self.no_chao = True
+
+        # Atualizar Goomba
+        if self.goomba_vivo:
+            self.goomba.update(self.LARGURA)
+
+        # Colisão com Goomba
+        if self.goomba_vivo and mario_rect.colliderect(self.goomba.rect):
+            if self.vel_y > 0 and mario_rect.bottom <= self.goomba.rect.top + 10:
+                # Pula na cabeça do Goomba
+                self.goomba_vivo = False
+                self.vel_y = -8  # Mario pula depois de esmagar
+            else:
+                print("Mario foi atingido pelo Goomba!")
+
+    def events(self, event):
+        keys = pg.key.get_pressed()
+        self.vel_x = 0
+
+        if keys[pg.K_LEFT]:
+            self.vel_x = -4
+        elif keys[pg.K_RIGHT]:
+            self.vel_x = 4
+
+        if keys[pg.K_SPACE] and self.no_chao:
+            self.vel_y = -12
+            self.no_chao = False
