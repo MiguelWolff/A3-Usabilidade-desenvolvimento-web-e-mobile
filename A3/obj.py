@@ -1,24 +1,23 @@
 import pygame as pg
 
 class Obj:
-        
     def __init__(self, image, x, y):
-        
         self.group = pg.sprite.Group()
         self.sprite = pg.sprite.Sprite(self.group)
 
-        self.sprite.image = pg.image.load(image)
+        self.sprite.image = pg.image.load(image).convert_alpha()
         self.sprite.rect = self.sprite.image.get_rect()
-        self.sprite.rect[0] = x
-        self.sprite.rect[1] = y
-        self.frame = 1
-        self.tick = 0
+        self.sprite.rect.topleft = (x, y)
 
-        # Carregar imagem do Mario
-        mario_img = pg.image.load("mario.png").convert_alpha()
-        mario_rect = mario_img.get_rect()
-        mario_rect.topleft = (100, 800 - 150)
-
-    
-    def drawing(self, window):
+    def draw(self, window):
         self.group.draw(window)
+
+    def update_position(self, dx, dy):
+        self.sprite.rect.x += dx
+        self.sprite.rect.y += dy
+
+    def set_y(self, y):
+        self.sprite.rect.y = y
+
+    def get_rect(self):
+        return self.sprite.rect
