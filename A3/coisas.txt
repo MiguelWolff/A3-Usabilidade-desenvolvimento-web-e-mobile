@@ -1,2 +1,34 @@
 altura goomba -45
 
+def update(self):
+        # Atualiza posição no mundo
+        self.mario_world_x += self.vel_x
+        self.mario.update_position(0, self.vel_y)  # x = 0, pois posição X está fixa
+        self.vel_y += self.gravidade
+
+        # Gravidade e chão
+        mario_rect = self.mario.get_rect()
+        if mario_rect.bottom >= self.ALTURA - 30:
+            mario_rect.bottom = self.ALTURA - 30
+            self.vel_y = 0
+            self.no_chao = True
+
+        # Atualizar Goomba
+        #self.goomba.update(2000)
+        # Atualizar Goomba
+        if self.goomba_vivo:
+            self.goomba.update(2000)
+
+        # Colisão com Goomba (corrigida para considerar câmera)
+        """camera_x = self.mario_world_x - self.mario_screen_x
+        mario_real_rect = mario_rect.copy()
+        mario_real_rect.x = self.mario_world_x  # posição no mundo
+        if mario_real_rect.colliderect(self.goomba.rect):
+            print("Colidiu com o Goomba!")"""
+        
+        if self.goomba_vivo and mario_rect.colliderect(self.goomba.rect):
+            if self.vel_y > 0 and mario_rect.bottom <= self.goomba.rect.top + 10:
+                self.goomba_vivo = False
+                self.vel_y = -8
+            else:
+                print("Mario foi atingido pelo Goomba!")
