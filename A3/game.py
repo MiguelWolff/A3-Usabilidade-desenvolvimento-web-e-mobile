@@ -16,31 +16,42 @@ class Game:
         self.vel_x = 0
         self.no_chao = True
 
-        # Mario
-        self.mario = Obj("Assets/Sprites/Mario.png", 50, altura - 120)
+        # Posição lógica do Mario no mundo
+        self.mario_world_x = 0
+        self.mario_screen_x = 50  # posição fixa na tela
+        self.mario_y = altura - 120
 
-        # Goomba
-        self.goomba = Goomba(250, altura - 45)
+        # Mario (posição inicial)
+        self.mario = Obj("Assets/Sprites/Mario.png", self.mario_screen_x, self.mario_y)
+
+        # Goomba no mundo
+        self.goomba = Goomba(300, altura - 45)
         self.goomba_vivo = True
 
     def draw(self, window):
         window.fill(AZUL)
 
-        # Chão
-        pg.draw.rect(window, VERDE, (0, self.ALTURA - 30, self.LARGURA, 30))
+        # Câmera segue a posição lógica do Mario
+        camera_x = self.mario_world_x - self.mario_screen_x
 
-        # Mario
+        # Chão (bem longo, exemplo 2000px)
+        pg.draw.rect(window, VERDE, (0 - camera_x, self.ALTURA - 30, 2000, 30))
+
+        # Goomba (movido com a câmera)
+        if self.goomba_vivo:
+            self.goomba.draw(window, camera_x)
+
+        # Mario sempre fixo na tela
+        self.mario.sprite.rect.x = self.mario_screen_x
         self.mario.draw(window)
 
-        # Goomba
-        if self.goomba_vivo:
-            self.goomba.draw(window)
-
     def update(self):
-        # Atualizar posição do Mario
-        self.mario.update_position(self.vel_x, self.vel_y)
+        # Atualiza posição no mundo
+        self.mario_world_x += self.vel_x
+        self.mario.update_position(0, self.vel_y)  # x = 0, pois posição X está fixa
         self.vel_y += self.gravidade
 
+        # Gravidade e chão
         mario_rect = self.mario.get_rect()
         if mario_rect.bottom >= self.ALTURA - 30:
             mario_rect.bottom = self.ALTURA - 30
@@ -48,18 +59,28 @@ class Game:
             self.no_chao = True
 
         # Atualizar Goomba
-        if self.goomba_vivo:
-            self.goomba.update(self.LARGURA)
+        if self.goomba:
+            self.goomba.update(2000)
 
         # Colisão com Goomba
-        if self.goomba_vivo and mario_rect.colliderect(self.goomba.rect):
-            if self.vel_y > 0 and mario_rect.bottom <= self.goomba.rect.top + 10:
-                # Pula na cabeça do Goomba
-                self.goomba_vivo = False
-                self.vel_y = -8  # Mario pula depois de esmagar
-            else:
-                print("Mario foi atingido pelo Goomba!")
+        camera_x = self.mario_world_x - self.mario_screen_x
+        mario_real_rect = mario_rect.copy()
+        mario_real_rect.x = self.mario_world_x  # posição no mundo
 
+        if self.goomba:
+            camera_x = self.mario_world_x - self.mario_screen_x
+            mario_real_rect = mario_rect.copy()
+            mario_real_rect.x = self.mario_world_x  # posição no mundo
+
+            if mario_real_rect.colliderect(self.goomba.rect):
+                # Verifica se Mario está caindo e acima do Goomba
+                if self.vel_y > 0 and mario_real_rect.bottom <= self.goomba.rect.top + 10:
+                    print("Goomba derrotado!")
+                    self.vel_y = -8  # Mario pula após pisar
+                    self.goomba = None  # Remove o Goomba
+                    self.goomba_vivo = False
+                else:
+                    print("Mario colidiu com o Goomba (lado ou baixo)")
     def events(self, event):
         keys = pg.key.get_pressed()
         self.vel_x = 0
