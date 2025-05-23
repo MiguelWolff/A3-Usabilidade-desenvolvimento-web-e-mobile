@@ -29,5 +29,7 @@ class Goomba(pg.sprite.Sprite):
         if self.rect.left <= 0 or self.rect.right >= largura_tela:
             self.direction *= -1
 
-    def draw(self, window):
-        window.blit(self.image, self.rect)
+    def draw(self, window, camera_x=0):
+        temp_rect = self.rect.copy()
+        temp_rect.x -= camera_x
+        window.blit(self.image, temp_rect)
