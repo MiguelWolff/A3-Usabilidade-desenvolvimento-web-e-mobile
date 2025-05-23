@@ -12,6 +12,7 @@ class Obj:
     def draw(self, window):
         self.group.draw(window)
 
+
     def update_position(self, dx, dy):
         self.sprite.rect.x += dx
         self.sprite.rect.y += dy
