@@ -1,5 +1,5 @@
 import pygame as pg
-from obj import Obj, Bloco
+from obj import Obj, Bloco, Cogumelo
 from enemies import Goomba
 
 AZUL = (135, 206, 235)
@@ -23,6 +23,7 @@ class Game:
         self.mario = Obj("Assets/Sprites/Mario.png", self.mario_screen_x, self.mario_y, animated=True)
 
         self.goomba = Goomba(300, altura - 45)
+        self.cogumelo = Cogumelo(200, self.ALTURA - 45)
 
         # Blocos no mundo
         self.blocos = [
@@ -42,6 +43,10 @@ class Game:
 
         if self.goomba:
             self.goomba.draw(window, camera_x)
+
+        if self.cogumelo:
+            self.cogumelo.draw(window, camera_x)
+            
 
         self.mario.sprite.rect.x = self.mario_screen_x
         self.mario.draw(window)
@@ -89,6 +94,10 @@ class Game:
         if self.goomba:
             self.goomba.update(2000)
 
+        if self.cogumelo:
+            self.cogumelo.update(self.blocos, self.ALTURA)
+
+
         # Colisão com Goomba
         if self.goomba and mario_real_rect.colliderect(self.goomba.rect):
             if self.vel_y > 0 and mario_real_rect.bottom <= self.goomba.rect.top + 10:
@@ -102,6 +111,10 @@ class Game:
             self.goomba = None
         
         self.mario.animate(self.vel_x != 0)
+
+        if self.cogumelo and mario_real_rect.colliderect(self.cogumelo.get_rect()):
+            self.mario.crescer()
+            self.cogumelo = None
 
     def events(self, event):
         keys = pg.key.get_pressed()
