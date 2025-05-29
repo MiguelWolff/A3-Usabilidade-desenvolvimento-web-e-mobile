@@ -1,5 +1,5 @@
 import pygame as pg
-from obj import Obj, Bloco, Cogumelo
+from obj import Obj, Bloco, Cogumelo, QuestionBlock
 from enemies import Goomba
 
 AZUL = (135, 206, 235)
@@ -23,13 +23,16 @@ class Game:
         self.mario = Obj("Assets/Sprites/Mario.png", self.mario_screen_x, self.mario_y, animated=True)
 
         self.goomba = Goomba(300, altura - 45)
-        self.cogumelo = Cogumelo(200, self.ALTURA - 45)
+        self.cogumelo = None
 
         # Blocos no mundo
         self.blocos = [
             Bloco(200, altura - 80, tipo="brown"),
             Bloco(250, altura - 80, tipo="castle"),
-            Bloco(300, altura - 80, tipo="dark")
+            Bloco(300, altura - 80, tipo="dark"),
+            QuestionBlock(350, altura - 80, tema="normal", contem_cogumelo=True),
+            QuestionBlock(400, altura - 80, tema="castle"),
+            QuestionBlock(450, altura - 80, tema="dark")
         ]
 
     def draw(self, window):
@@ -40,12 +43,16 @@ class Game:
 
         for bloco in self.blocos:
             bloco.draw(window, camera_x)
+            if isinstance(bloco, QuestionBlock):
+                bloco.update()
+
 
         if self.goomba:
             self.goomba.draw(window, camera_x)
 
         if self.cogumelo:
             self.cogumelo.draw(window, camera_x)
+
             
 
         self.mario.sprite.rect.x = self.mario_screen_x
@@ -73,17 +80,17 @@ class Game:
 
             if mario_real_rect.colliderect(bloco_rect):
                 if self.vel_y > 0 and mario_real_rect.bottom <= bloco_rect.top + 10:
-                    # Encostou por cima
                     mario_rect.bottom = bloco_rect.top
                     self.vel_y = 0
                     self.no_chao = True
                 elif self.vel_y < 0 and mario_real_rect.top >= bloco_rect.bottom - 10:
-                    # Bateu por baixo
                     mario_rect.top = bloco_rect.bottom
                     self.vel_y = 0
-                    print("Bloco atingido por baixo!")
+                    if isinstance(bloco, QuestionBlock):
+                        novo_item = bloco.ativar()
+                        if isinstance(novo_item, Cogumelo):
+                            self.cogumelo = novo_item
                 elif self.vel_x != 0:
-                    # Colisão lateral
                     if self.vel_x > 0:
                         mario_real_rect.right = bloco_rect.left
                     else:
@@ -95,8 +102,7 @@ class Game:
             self.goomba.update(2000)
 
         if self.cogumelo:
-            self.cogumelo.update(self.blocos, self.ALTURA)
-
+            self.cogumelo.update(2000)
 
         # Colisão com Goomba
         if self.goomba and mario_real_rect.colliderect(self.goomba.rect):
@@ -115,6 +121,11 @@ class Game:
         if self.cogumelo and mario_real_rect.colliderect(self.cogumelo.get_rect()):
             self.mario.crescer()
             self.cogumelo = None
+
+        for bloco in self.blocos:
+            if isinstance(bloco, QuestionBlock):
+                bloco.update()
+
 
     def events(self, event):
         keys = pg.key.get_pressed()
