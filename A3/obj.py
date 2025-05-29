@@ -70,18 +70,25 @@ class Obj:
 
 
 class Bloco:
-    def __init__(self, x, y, tipo="brown"):
+    def __init__(self, x, y, tipo="brown", tema="brown"):
+        self.tema = tema
+        self.tipo = tipo  # pode ser útil depois
+
         if tipo == "brown":
             imagem = "BrickBlockBrown.png"
         elif tipo == "castle":
             imagem = "BrickBlockCastle.png"
         elif tipo == "dark":
             imagem = "BrickBlockDark.png"
+        elif tipo == "question":
+            # QuestionBlock não usa isso diretamente, mas evita erro
+            imagem = f"QuestionBlock0.png"
         else:
             raise ValueError(f"Tipo de bloco desconhecido: {tipo}")
 
         self.image = pg.image.load(f"Assets/Sprites/{imagem}").convert_alpha()
         self.rect = self.image.get_rect(topleft=(x, y))
+
 
     def draw(self, window, camera_x):
         window.blit(self.image, (self.rect.x - camera_x, self.rect.y))
@@ -89,50 +96,89 @@ class Bloco:
     def get_rect(self):
         return self.rect
 
-class Cogumelo(Obj):
+class Cogumelo:
     def __init__(self, x, y):
-        super().__init__("Assets/Sprites/Mushroom.png", x, y, animated=False)
-        self.vel_x = 2
+        self.image = pg.image.load("Assets/Sprites/Mushroom.png").convert_alpha()
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.speed = 2
+        self.direction = 1
+        self.subindo = True
+        self.alvo_y = y - 32  # sobe 32 pixels ao aparecer
         self.vel_y = 0
         self.gravidade = 1
-        self.no_chao = False
 
-    def update(self, blocos, world_height):
-        self.sprite.rect.y += self.vel_y
-        self.vel_y += self.gravidade
+    def update(self, world_width):
+        # Se está subindo
+        if self.subindo:
+            self.rect.y -= 2
+            if self.rect.y <= self.alvo_y:
+                self.subindo = False
+                self.vel_y = 0
 
-        self.no_chao = False
+        else:
+            self.vel_y += self.gravidade
+            self.rect.y += self.vel_y
+            self.rect.x += self.speed * self.direction
 
-        # Colisão vertical
-        for bloco in blocos:
-            if self.sprite.rect.colliderect(bloco.get_rect()):
-                if self.vel_y > 0:
-                    self.sprite.rect.bottom = bloco.get_rect().top
-                    self.vel_y = 0
-                    self.no_chao = True
-                elif self.vel_y < 0:
-                    self.sprite.rect.top = bloco.get_rect().bottom
-                    self.vel_y = 0
+            # Inverte direção nas bordas
+            if self.rect.left <= 0 or self.rect.right >= world_width:
+                self.direction *= -1
 
-        # Colisão com o chão
-        if self.sprite.rect.bottom >= world_height - 30:
-            self.sprite.rect.bottom = world_height - 30
-            self.vel_y = 0
-            self.no_chao = True
+    def draw(self, window, camera_x):
+        window.blit(self.image, (self.rect.x - camera_x, self.rect.y))
 
-        # Movimento lateral
-        self.sprite.rect.x += self.vel_x
+    def get_rect(self):
+        return self.rect
 
-        # Colisão horizontal
-        for bloco in blocos:
-            if self.sprite.rect.colliderect(bloco.get_rect()):
-                if self.vel_x > 0:
-                    self.sprite.rect.right = bloco.get_rect().left
-                else:
-                    self.sprite.rect.left = bloco.get_rect().right
-                self.vel_x *= -1  # Inverte a direção
 
-    def draw(self, window, camera_x=0):
-        pos = (self.sprite.rect.x - camera_x, self.sprite.rect.y)
-        window.blit(self.sprite.image, pos)
 
+class QuestionBlock(Bloco):
+    def __init__(self, x, y, tema="brown", contem_cogumelo=False):
+        self.ativo = True
+        super().__init__(x, y, tipo="question", tema=tema)
+        self.frames = self.load_frames(tema)
+        self.current_frame = 0
+        self.animation_timer = 0
+        self.hit = False
+        self.contem_cogumelo = contem_cogumelo
+        self.tema = tema
+
+    def load_frames(self, tema):
+        prefix = "QuestionBlock"
+        if tema == "castle":
+            prefix = "QuestionBlockCastle"
+        elif tema == "dark":
+            prefix = "QuestionBlockDark"
+        return [pg.image.load(f"Assets/Sprites/{prefix}{i}.png").convert_alpha() for i in range(6)]
+
+    def update(self):
+        if not self.hit:
+            self.animation_timer += 1
+            if self.animation_timer >= 8:
+                self.current_frame = (self.current_frame + 1) % len(self.frames)
+                self.animation_timer = 0
+            self.image = self.frames[self.current_frame]
+
+    def on_hit(self):
+        self.hit = True
+
+        if self.tema == "brown":
+            self.image = pg.image.load("Assets/Sprites/EmptyBlock.png").convert_alpha()
+        elif self.tema == "castle":
+            self.image = pg.image.load("Assets/Sprites/EmptyBlockCastle.png").convert_alpha()
+        elif self.tema == "dark":
+            self.image = pg.image.load("Assets/Sprites/EmptyBlockDark.png").convert_alpha()
+        else:
+            self.image = pg.image.load("Assets/Sprites/EmptyBlock.png").convert_alpha()  # fallback
+
+        return self.contem_cogumelo
+    def ativar(self):
+        if not self.ativo:
+            return None
+        self.ativo = False
+        vazio = f"EmptyBlock{self.tema.capitalize() if self.tema != 'normal' else ''}.png"
+        self.image = pg.image.load(f"Assets/Sprites/{vazio}").convert_alpha()
+        if self.contem_cogumelo:
+            # Cria um cogumelo logo acima do bloco
+            return Cogumelo(self.rect.x, self.rect.y - 32)
+        return None
