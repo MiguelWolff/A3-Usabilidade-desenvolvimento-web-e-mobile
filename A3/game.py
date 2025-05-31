@@ -103,6 +103,11 @@ class Game:
 
         if self.cogumelo:
             self.cogumelo.update(2000)
+            self.no_chao = True
+            if self.cogumelo.rect.bottom >= self.ALTURA - 30:
+                self.cogumelo.rect.bottom = self.ALTURA - 30
+                self.vel_y = 0
+                self.no_chao = True
 
         # Colisão com Goomba
         if self.goomba and mario_real_rect.colliderect(self.goomba.rect):
