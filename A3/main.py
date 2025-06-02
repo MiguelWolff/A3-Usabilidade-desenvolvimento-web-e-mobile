@@ -5,7 +5,6 @@ from game import Game
 pg.init()
 
 class Main:
-
     def __init__(self, sizex, sizey, title):
         self.sizex = sizex
         self.sizey = sizey
@@ -19,14 +18,15 @@ class Main:
         self.fps = pg.time.Clock()
 
     def draw(self):
+        """Desenha o menu ou o jogo dependendo da cena atual."""
         self.window.fill((0, 0, 0))
         if not self.menu.change_scene:
             self.menu.draw(self.window)
         else:
             self.game.draw(self.window)
-            self.game.update()
 
     def events(self):
+        """Processa os eventos do pygame e os encaminha para menu ou jogo."""
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 self.loop = False
@@ -36,12 +36,22 @@ class Main:
             else:
                 self.game.events(event)
 
-    def update(self):
+    def run(self):
+        """Loop principal do jogo."""
         while self.loop:
-            self.fps.tick(60)
-            self.draw()
+            self.fps.tick(60)  # limita a 60 FPS
+
             self.events()
+
+            if self.menu.change_scene:
+                self.game.update()
+
+            self.draw()
+
             pg.display.update()
 
-game = Main(400, 300, "Mario Bros")
-game.update()
+        pg.quit()  # encerra o pygame ao sair do loop
+
+if __name__ == "__main__":
+    main = Main(400, 300, "Mario Bros")
+    main.run()
