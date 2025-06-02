@@ -11,15 +11,19 @@ class Obj:
 
         self.image_idle = pg.image.load(image_idle).convert_alpha()
 
+        # Carrega imagens extras
+        self.image_jump = pg.image.load("Assets/Sprites/MarioJumping.png").convert_alpha()
+        self.image_skid = pg.image.load("Assets/Sprites/MarioSkidding.png").convert_alpha()
+
         if animated:
-            # Carrega os frames da animação de corrida do Mario
+            # Carrega os frames da animação de corrida
             self.frames = [
                 pg.image.load(f"Assets/Sprites/MarioRun{i}.png").convert_alpha()
                 for i in range(3)
             ]
             self.current_frame = 0
             self.animation_timer = 0
-            self.sprite.image = self.image_idle  # começa com a imagem parada
+            self.sprite.image = self.image_idle
         else:
             self.sprite.image = self.image_idle
 
@@ -27,15 +31,16 @@ class Obj:
         self.sprite.rect.topleft = (x, y)
 
     def crescer(self):
-        # Muda Mario para a forma grande (super Mario)
         self.big = True
         self.image_idle = pg.image.load("Assets/Sprites/SuperMario.png").convert_alpha()
         self.frames = [
             pg.image.load(f"Assets/Sprites/SuperMarioRun{i}.png").convert_alpha()
             for i in range(3)
         ]
+        self.image_jump = pg.image.load("Assets/Sprites/SuperMarioJumping.png").convert_alpha()
+        self.image_skid = pg.image.load("Assets/Sprites/SuperMarioSkidding.png").convert_alpha()
         self.sprite.image = self.image_idle
-        # Ajusta a posição vertical para compensar o aumento de tamanho
+
         rect = self.sprite.rect
         self.sprite.rect = self.image_idle.get_rect(topleft=(rect.x, rect.y - 32))
 
@@ -46,31 +51,35 @@ class Obj:
         self.sprite.rect.x += dx
         self.sprite.rect.y += dy
 
-    def animate(self, moving):
+    def animate(self, moving, jumping=False, skidding=False):
         if not self.animated:
             return
 
-        if moving:
+        if jumping:
+            image = self.image_jump
+        elif skidding:
+            image = self.image_skid
+        elif moving:
             self.animation_timer += 1
             if self.animation_timer >= 8:
                 self.current_frame = (self.current_frame + 1) % len(self.frames)
                 self.animation_timer = 0
-            frame = self.frames[self.current_frame]
-            # Inverte a imagem caso Mario esteja olhando para a esquerda
-            if self.facing_left:
-                frame = pg.transform.flip(frame, True, False)
-            self.sprite.image = frame
+            image = self.frames[self.current_frame]
         else:
             image = self.image_idle
-            if self.facing_left:
-                image = pg.transform.flip(image, True, False)
-            self.sprite.image = image
+
+        if self.facing_left:
+            image = pg.transform.flip(image, True, False)
+
+        self.sprite.image = image
 
     def set_y(self, y):
         self.sprite.rect.y = y
 
     def get_rect(self):
         return self.sprite.rect
+
+
 
 
 class Bloco:
