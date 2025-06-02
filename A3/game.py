@@ -1,6 +1,6 @@
 import pygame as pg
 from obj import Obj, Bloco, Cogumelo, QuestionBlock, Estrela
-from enemies import Goomba, Bowser
+from enemies import Goomba, Bowser, KoopaTroopa
 
 # Constantes
 AZUL = (135, 206, 235)
@@ -40,8 +40,14 @@ class Game:
             QuestionBlock(350, altura - 80, tema="normal", contem_cogumelo=True),
             QuestionBlock(400, altura - 80, tema="castle", contem_estrela=True),
             QuestionBlock(450, altura - 80, tema="dark", contem_cogumelo=True),
+            QuestionBlock(500, altura - 80, tema="normal", contem_cogumelo=True),
         ]
         self.bowser = Bowser(600, altura - 62)
+        self.koopas = [
+            KoopaTroopa(500, altura - 55, tipo="verde"),
+            KoopaTroopa(600, altura - 55, tipo="verde_casco_azul"),
+            KoopaTroopa(700, altura - 55, tipo="vermelho")
+        ]
 
     def draw(self, window):
         window.fill(AZUL)
@@ -69,6 +75,10 @@ class Game:
         if self.bowser:
             self.bowser.draw(window, camera_x)
 
+        for koopa in self.koopas:
+            koopa.draw(window, camera_x)
+
+
         # Desenha Mario (sprite fixo na tela)
         self.mario.sprite.rect.x = self.mario_screen_x
         self.mario.draw(window)
@@ -77,6 +87,7 @@ class Game:
         font = pg.font.SysFont("Arial", 20)
         vidas_texto = font.render(f"Vidas: {self.vidas}", True, (255, 255, 255))
         window.blit(vidas_texto, (10, 10))
+
 
     def update(self):
         # Atualiza posição horizontal do Mario no mundo
@@ -170,12 +181,35 @@ class Game:
                 self.estrela = None
 
         # Anima Mario (correndo ou parado)
-        self.mario.animate(self.vel_x != 0)
+        skidding = False
+        if self.vel_x < 0 and not self.mario.facing_left:
+            skidding = True
+        elif self.vel_x > 0 and self.mario.facing_left:
+            skidding = True
+        
+        self.mario.animate(
+            moving=self.vel_x != 0,
+            jumping=not self.no_chao,
+            skidding=skidding
+        )
 
         if self.bowser:
             self.bowser.update(2000)
             if mario_real_rect.colliderect(self.bowser.get_rect()):
                 print("Mario colidiu com o Bowser")
+
+        # Atualiza KoopasTroopas
+        for koopa in self.koopas:
+            koopa.update(2000)
+        self.koopas = [k for k in self.koopas if k.visible]
+            # Verifica colisão koopastroopas
+        for koopa in self.koopas:
+            if mario_real_rect.colliderect(koopa.get_rect()):
+                if self.vel_y > 0 and mario_real_rect.bottom <= koopa.get_rect().top + 10:
+                    self.vel_y = -8
+                    koopa.morrer()
+                else:
+                    print("Mario colidiu com o Koopa!")
 
     def events(self, event):
         # Evento de teclado mais responsivo e correto
