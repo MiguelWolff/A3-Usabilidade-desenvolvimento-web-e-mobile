@@ -91,3 +91,67 @@ class Bowser:
 
     def morrer(self):
         self.alive = False
+
+class KoopaTroopa:
+    def __init__(self, x, y, tipo="verde"):
+        self.tipo = tipo
+        self.frames = self.load_frames(tipo)
+        self.current_frame = 0
+        self.animation_timer = 0
+        self.image = self.frames[0]
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+        self.direction = -1
+        self.speed = 1
+        self.alive = True
+        self.death_timer = 0
+        self.visible = True
+
+    def load_frames(self, tipo):
+        base_path = "Assets/Sprites/"
+        if tipo == "verde":
+            return [
+                pg.image.load(base_path + "KoopaTroopaG0.png").convert_alpha(),
+                pg.image.load(base_path + "KoopaTroopaG1.png").convert_alpha()
+            ]
+        elif tipo == "verde_casco_azul":
+            return [
+                pg.image.load(base_path + "KoopaTroopaGB0.png").convert_alpha(),
+                pg.image.load(base_path + "KoopaTroopaGB1.png").convert_alpha()
+            ]
+        elif tipo == "vermelho":
+            return [
+                pg.image.load(base_path + "KoopaTroopaR0.png").convert_alpha(),
+                pg.image.load(base_path + "KoopaTroopaR1.png").convert_alpha()
+            ]
+        else:
+            raise ValueError("Tipo de KoopaTroopa inválido.")
+
+    def update(self, world_width):
+        if not self.alive:
+            self.death_timer += 1
+            if self.death_timer >= 15:
+                self.visible = False  # <- desativa visibilidade
+            return
+
+        self.animation_timer += 1
+        if self.animation_timer >= 10:
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.image = self.frames[self.current_frame]
+            self.animation_timer = 0
+
+        self.rect.x += self.direction * self.speed
+
+        if self.rect.left <= 0 or self.rect.right >= world_width:
+            self.direction *= -1
+
+    def draw(self, window, camera_x):
+        if self.alive:
+            flipped_image = pg.transform.flip(self.image, self.direction == -1, False)
+            window.blit(flipped_image, (self.rect.x - camera_x, self.rect.y))
+
+    def get_rect(self):
+        return self.rect
+
+    def morrer(self):
+        self.alive = False
