@@ -1,5 +1,5 @@
 import pygame as pg
-from obj import Obj, Bloco, Cogumelo, QuestionBlock, Estrela
+from obj import Obj, Bloco, Cogumelo, QuestionBlock, Estrela, FlorDeFogo
 from enemies import Goomba, Bowser, KoopaTroopa
 
 # Constantes
@@ -32,15 +32,17 @@ class Game:
         self.goomba = Goomba(300, altura - 45)
         self.cogumelo = None
         self.estrela = None
+        self.flor = None
+        self.crouching = False
 
         self.blocos = [
             Bloco(200, altura - 80, tipo="brown"),
             Bloco(250, altura - 80, tipo="castle"),
             Bloco(300, altura - 80, tipo="dark"),
-            QuestionBlock(350, altura - 80, tema="normal", contem_cogumelo=True),
+            QuestionBlock(350, altura - 80, tema="normal", contem_flor=True),
             QuestionBlock(400, altura - 80, tema="castle", contem_estrela=True),
             QuestionBlock(450, altura - 80, tema="dark", contem_cogumelo=True),
-            QuestionBlock(500, altura - 80, tema="normal", contem_cogumelo=True),
+            QuestionBlock(500, altura - 80, tema="normal", contem_cogumelo_vida=True),
         ]
         self.bowser = Bowser(600, altura - 62)
         self.koopas = [
@@ -71,6 +73,9 @@ class Game:
 
         if self.estrela:
             self.estrela.draw(window, camera_x)
+        
+        if self.flor:
+            self.flor.draw(window, camera_x)
         
         if self.bowser:
             self.bowser.draw(window, camera_x)
@@ -131,6 +136,8 @@ class Game:
                             self.cogumelo = novo_item
                         elif isinstance(novo_item, Estrela):
                             self.estrela = novo_item
+                        elif isinstance(novo_item, FlorDeFogo):
+                            self.flor = novo_item
                 else:
                     # Colisão lateral
                     if self.vel_x > 0:
@@ -180,6 +187,14 @@ class Game:
                 # Implementar efeitos da estrela
                 self.estrela = None
 
+        # Atualiza flor
+        if self.flor:
+            self.flor.update(2000)
+            if mario_real_rect.colliderect(self.flor.rect):
+                print("Mario pegou a flor de fogo!")
+                self.mario.virar_fogo()
+                self.flor = None
+
         # Anima Mario (correndo ou parado)
         skidding = False
         if self.vel_x < 0 and not self.mario.facing_left:
@@ -190,7 +205,8 @@ class Game:
         self.mario.animate(
             moving=self.vel_x != 0,
             jumping=not self.no_chao,
-            skidding=skidding
+            skidding=skidding,
+            crouching=self.crouching
         )
 
         if self.bowser:
@@ -213,6 +229,7 @@ class Game:
 
     def events(self, event):
         # Evento de teclado mais responsivo e correto
+        self.crouching = False
         if event.type == pg.KEYDOWN:
             if event.key == pg.K_LEFT:
                 self.vel_x = -VELOCIDADE
@@ -223,7 +240,9 @@ class Game:
             elif event.key == pg.K_SPACE and self.no_chao:
                 self.vel_y = IMPULSO_PULO
                 self.no_chao = False
-
+            elif event.key == pg.K_DOWN:
+                self.crouching = True
+            
         elif event.type == pg.KEYUP:
             if event.key in [pg.K_LEFT, pg.K_RIGHT]:
                 self.vel_x = 0
