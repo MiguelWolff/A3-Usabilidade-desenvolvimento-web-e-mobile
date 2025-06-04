@@ -185,6 +185,7 @@ class Game:
             if mario_real_rect.colliderect(self.estrela.rect):
                 print("Estrela coletada! Mario invencível?")
                 # Implementar efeitos da estrela
+                self.mario.marioestrela()
                 self.estrela = None
 
         # Atualiza flor
