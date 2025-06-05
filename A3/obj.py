@@ -34,10 +34,10 @@ class Obj:
         self.sprite.rect = self.sprite.image.get_rect()
         self.sprite.rect.topleft = (x, y)
 
-    def crescer(self):
-        if self.fogo:
+    def crescer(self, forcar=False):
+        if self.fogo and not forcar:
             return
-        if self.estrela:
+        if self.estrela and not forcar:
             return
         self.big = True
         self.image_idle = pg.image.load("Assets/Sprites/SuperMario.png").convert_alpha()
@@ -53,8 +53,8 @@ class Obj:
         rect = self.sprite.rect
         self.sprite.rect = self.image_idle.get_rect(topleft=(rect.x, rect.y - 32))
 
-    def virar_fogo(self):
-        if self.estrela:
+    def virar_fogo(self, forcar = False):
+        if self.estrela and not forcar:
             return
         self.fogo = True
         self.image_idle = pg.image.load("Assets/Sprites/FieryMario.png").convert_alpha()
@@ -120,10 +120,11 @@ class Obj:
             self.estrela_timer -= 1
             if self.estrela_timer <= 0:
                 self.estrela = False
+                print("Acabou estrela")
                 if self.estado_pre_estrela == "fogo":
-                    self.virar_fogo()
+                    self.virar_fogo(forcar=True)
                 else:
-                    self.crescer()
+                    self.crescer(forcar=True)
 
         # Atualizar cooldown da bola de fogo
         if self.fireball_cooldown > 0:
@@ -311,20 +312,25 @@ class QuestionBlock(Bloco):
         return [pg.image.load(f"Assets/Sprites/{prefix}{i}.png").convert_alpha() for i in range(6)]
 
     def update(self):
-        if not self.hit:
-            self.animation_timer += 1
-            if self.animation_timer >= 8:
-                self.current_frame = (self.current_frame + 1) % len(self.frames)
-                self.animation_timer = 0
-            self.image = self.frames[self.current_frame]
+        if not self.ativo or self.hit:
+            if self.tema in ["brown", "castle", "dark"]:
+                vazio = f"EmptyBlock{self.tema.capitalize()}.png"
+            else:
+                vazio = "EmptyBlockBrown.png"
+            self.image = pg.image.load(f"Assets/Sprites/{vazio}").convert_alpha()
+            return  # <- não anima mais
+
+        self.animation_timer += 1
+        if self.animation_timer >= 8:
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.animation_timer = 0
+        self.image = self.frames[self.current_frame]
 
     def ativar(self):
         if not self.ativo:
             return None
         self.ativo = False
-        vazio = f"EmptyBlock{self.tema.capitalize() if self.tema != 'normal' else ''}.png"
-        self.image = pg.image.load(f"Assets/Sprites/{vazio}").convert_alpha()
-
+        self.hit = True
         if self.contem_cogumelo_vida:
             return Cogumelo(self.rect.x, self.rect.y, tipo="vida")
 
@@ -336,7 +342,6 @@ class QuestionBlock(Bloco):
 
         if self.contem_flor:
             return FlorDeFogo(self.rect.x, self.rect.y)
-
         return None
 
 class Estrela:
