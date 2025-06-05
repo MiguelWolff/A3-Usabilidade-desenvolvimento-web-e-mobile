@@ -189,7 +189,7 @@ class Game:
                 if self.cogumelo.tipo == "vida":
                     self.vidas += 1
                 else:
-                    self.mario.crescer()
+                    self.mario.crescer(forcar=False)
                 self.cogumelo = None
 
         # Atualiza estrela
@@ -206,9 +206,11 @@ class Game:
             self.flor.update(2000)
             if mario_real_rect.colliderect(self.flor.rect):
                 print("Mario pegou a flor de fogo!")
-                self.mario.virar_fogo()
+                self.mario.virar_fogo(forcar=False)
                 self.flor = None
-
+        # Atualiza Mario
+        if self.mario:
+            self.mario.update()
         # Anima Mario (correndo ou parado)
         skidding = False
         if self.vel_x < 0 and not self.mario.facing_left:
@@ -257,12 +259,22 @@ class Game:
             elif event.key == pg.K_DOWN:
                 self.crouching = True
             elif event.key == pg.K_b:
-                if not self.estrela:
+                if not self.mario.estrela:
                     if self.mario.fogo and self.fireball_cooldown == 0:
                         direction = 1 if not self.mario.facing_left else -1
-                        fireball = Fireball(self.mario_world_x + self.mario.sprite.rect.centerx, self.mario.sprite.rect.centery, direction)
+
+                        # Posição X real de Mario no mundo (não a da tela)
+                        mario_x = self.mario_world_x
+                        mario_y = self.mario.sprite.rect.centery
+
+                        # Ajuste para sair à frente do Mario
+                        offset = 10
+                        fireball_x = mario_x + offset if direction == 1 else mario_x - offset
+
+                        fireball = Fireball(fireball_x, mario_y, direction)
                         self.fireballs.append(fireball)
                         self.fireball_cooldown = 20
+
                     
         elif event.type == pg.KEYUP:
             if event.key in [pg.K_LEFT, pg.K_RIGHT]:
