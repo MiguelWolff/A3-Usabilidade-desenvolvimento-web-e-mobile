@@ -1,5 +1,5 @@
 import pygame as pg
-from obj import Obj, Bloco, Cogumelo, QuestionBlock, Estrela, FlorDeFogo
+from obj import Obj, Bloco, Cogumelo, QuestionBlock, Estrela, FlorDeFogo, Fireball
 from enemies import Goomba, Bowser, KoopaTroopa
 
 # Constantes
@@ -43,6 +43,7 @@ class Game:
             QuestionBlock(400, altura - 80, tema="castle", contem_estrela=True),
             QuestionBlock(450, altura - 80, tema="dark", contem_cogumelo=True),
             QuestionBlock(500, altura - 80, tema="normal", contem_cogumelo_vida=True),
+            QuestionBlock(550, altura - 80, tema="castle", contem_flor=True)
         ]
         self.bowser = Bowser(600, altura - 62)
         self.koopas = [
@@ -50,6 +51,9 @@ class Game:
             KoopaTroopa(600, altura - 55, tipo="verde_casco_azul"),
             KoopaTroopa(700, altura - 55, tipo="vermelho")
         ]
+        self.fireballs = []
+        self.fireball_cooldown = 0
+
 
     def draw(self, window):
         window.fill(AZUL)
@@ -83,6 +87,8 @@ class Game:
         for koopa in self.koopas:
             koopa.draw(window, camera_x)
 
+        for fireball in self.fireballs:
+            fireball.draw(window, camera_x)
 
         # Desenha Mario (sprite fixo na tela)
         self.mario.sprite.rect.x = self.mario_screen_x
@@ -145,6 +151,13 @@ class Game:
                     else:
                         mario_real_rect.left = bloco_rect.right
                     self.vel_x = 0
+
+        for fireball in self.fireballs:
+            fireball.update(self.blocos)
+        self.fireballs = [f for f in self.fireballs if f.visible]  # remove se sair da tela ou colidir
+
+        if self.fireball_cooldown > 0:
+            self.fireball_cooldown -= 1
 
         # Atualiza posição real no mundo
         self.mario_world_x = mario_real_rect.x
@@ -243,7 +256,14 @@ class Game:
                 self.no_chao = False
             elif event.key == pg.K_DOWN:
                 self.crouching = True
-            
+            elif event.key == pg.K_b:
+                if not self.estrela:
+                    if self.mario.fogo and self.fireball_cooldown == 0:
+                        direction = 1 if not self.mario.facing_left else -1
+                        fireball = Fireball(self.mario_world_x + self.mario.sprite.rect.centerx, self.mario.sprite.rect.centery, direction)
+                        self.fireballs.append(fireball)
+                        self.fireball_cooldown = 20
+                    
         elif event.type == pg.KEYUP:
             if event.key in [pg.K_LEFT, pg.K_RIGHT]:
                 self.vel_x = 0
