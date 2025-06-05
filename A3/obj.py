@@ -12,6 +12,8 @@ class Obj:
         self.estrela = False
         self.estrela_timer = 0
         self.estado_pre_estrela = None
+        self.fireballs = []
+        self.fireball_cooldown = 0  # corrigido o nome para singular
 
         self.image_idle = pg.image.load(image_idle).convert_alpha()
         self.image_jump = pg.image.load("Assets/Sprites/MarioJumping.png").convert_alpha()
@@ -69,16 +71,16 @@ class Obj:
         self.sprite.rect = self.image_idle.get_rect(topleft=(rect.x, rect.y - 32))
 
     def marioestrela(self):
-        if self.fogo ==True:
+        if self.fogo:
             self.estado_pre_estrela = "fogo"
         else:
             self.estado_pre_estrela = "super"
 
         if not self.big and not self.fogo:
-                    self.crescer()
+            self.crescer()
 
         self.estrela = True
-        self.estrela_timer = 600  # Duração da invencibilidade (~10 segundos a 60 FPS)        
+        self.estrela_timer = 600  # Duração da invencibilidade (~10 segundos a 60 FPS)
 
         self.frames_idle = [
             pg.image.load("Assets/Sprites/SuperMario.png").convert_alpha(),
@@ -105,7 +107,6 @@ class Obj:
             pg.image.load("Assets/Sprites/SuperMarioSkidding.png").convert_alpha(),
             pg.image.load("Assets/Sprites/FieryMarioSkidding.png").convert_alpha(),
             pg.image.load("Assets/Sprites/SuperLuigiSkidding.png").convert_alpha()
-
         ]
 
         self.frames_crouch = [
@@ -114,7 +115,7 @@ class Obj:
             pg.image.load("Assets/Sprites/SuperLuigiCrouching.png").convert_alpha()
         ]
 
-    def update(self):
+    def update(self, tile_list=None, world_width=None):
         if self.estrela:
             self.estrela_timer -= 1
             if self.estrela_timer <= 0:
@@ -124,8 +125,21 @@ class Obj:
                 else:
                     self.crescer()
 
+        # Atualizar cooldown da bola de fogo
+        if self.fireball_cooldown > 0:
+            self.fireball_cooldown -= 1
+
+        # Atualizar bolas de fogo
+        if tile_list is not None and world_width is not None:
+            for fireball in self.fireballs[:]:
+                fireball.update(tile_list)
+                if fireball.rect.right < 0 or fireball.rect.left > world_width:
+                    self.fireballs.remove(fireball)
+
     def draw(self, window):
         self.group.draw(window)
+        for fireball in self.fireballs:
+            fireball.draw(window, 0)  # Assumindo câmera em 0 ou ajustar conforme seu código
 
     def update_position(self, dx, dy):
         self.sprite.rect.x += dx
@@ -164,7 +178,6 @@ class Obj:
             self.sprite.rect = image.get_rect()
             self.sprite.rect.bottom = old_bottom  # Reposiciona corretamente
             return
-
 
         # Fora do modo estrela: segue comportamento normal
         if crouching and (self.big or self.fogo):
@@ -209,8 +222,6 @@ class Obj:
 
     def get_rect(self):
         return self.sprite.rect
-
-
 
 class Bloco:
     def __init__(self, x, y, tipo="brown", tema="brown"):
@@ -405,3 +416,63 @@ class FlorDeFogo:
             if self.rect.y <= self.target_y:
                 self.rect.y = self.target_y
                 self.finished_spawning = True
+
+class Fireball:
+    def __init__(self, x, y, direction):
+        self.frames = [
+            pg.image.load(f"Assets/Sprites/Fireball{i}.png").convert_alpha()
+            for i in range(4)
+        ]
+        self.current_frame = 0
+        self.animation_timer = 0
+        self.image = self.frames[0]
+        self.rect = self.image.get_rect(center=(x, y))
+        self.vel_x = 5 * direction  # Direção depende da orientação do Mario
+        self.vel_y = 0
+        self.gravity = 1
+        self.bounce = -6
+        self.bouncing = False
+        self.visible = True  # Para controle de remoção
+
+    def update(self, tiles):
+        # Movimento horizontal
+        self.rect.x += self.vel_x
+
+        # Animação
+        self.animation_timer += 1
+        if self.animation_timer >= 10:
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.image = self.frames[self.current_frame]
+            self.animation_timer = 0
+
+        # Gravidade e quique vertical
+        if not self.bouncing:
+            self.vel_y += self.gravity
+            self.rect.y += self.vel_y
+
+        # Colisão com blocos (tiles)
+        collided = False
+        for tile in tiles:
+            if self.rect.colliderect(tile.get_rect()):
+                # Ajusta posição para cima do bloco
+                self.rect.bottom = tile.get_rect().top
+                self.vel_y = self.bounce
+                self.bouncing = True
+                collided = True
+                break
+        
+        if not collided:
+            self.bouncing = False
+
+        CHAO_Y = 270
+        if self.rect.bottom >= CHAO_Y:
+            self.rect.bottom = CHAO_Y
+            self.vel_y = 0
+            self.bouncing = False
+    
+        # Se a fireball sair da tela (exemplo: x < 0 ou x > 2000)
+        if self.rect.right < 0 or self.rect.left > 2000:
+            self.visible = False
+
+    def draw(self, window, camera_x):
+        window.blit(self.image, (self.rect.x - camera_x, self.rect.y))
