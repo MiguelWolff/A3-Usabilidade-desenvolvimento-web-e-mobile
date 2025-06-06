@@ -1,5 +1,5 @@
 import pygame as pg
-from obj import Obj, Bloco, Cogumelo, QuestionBlock, Estrela, FlorDeFogo, Fireball
+from obj import Obj, Bloco, Cogumelo, QuestionBlock, Estrela, FlorDeFogo, Fireball, Coin
 from enemies import Goomba, Bowser, KoopaTroopa
 
 # Constantes
@@ -152,9 +152,38 @@ class Game:
                         mario_real_rect.left = bloco_rect.right
                     self.vel_x = 0
 
-        for fireball in self.fireballs:
-            fireball.update(self.blocos)
-        self.fireballs = [f for f in self.fireballs if f.visible]  # remove se sair da tela ou colidir
+        for fireball in self.fireballs[:]:
+            if fireball.exploding:
+                # Atualiza animação da explosão
+                fireball.update()
+                if fireball.explosion_done:
+                    self.fireballs.remove(fireball)
+                continue
+            
+            # Atualiza movimento da fireball
+            fireball.update()
+    
+            # Colisão lateral com blocos
+            for bloco in self.blocos:
+                if fireball.rect.colliderect(bloco.get_rect()):
+                    # Verificar colisão lateral (exemplo simples)
+                    if (fireball.rect.right >= bloco.get_rect().left and
+                        fireball.rect.left < bloco.get_rect().left) or \
+                       (fireball.rect.left <= bloco.get_rect().right and
+                        fireball.rect.right > bloco.get_rect().right):
+                        fireball.explode()
+                        break
+                    
+            # Colisão com inimigos
+            for inimigo in self.inimigos:
+                if fireball.rect.colliderect(inimigo.get_rect()):
+                    inimigo.morrer()  # Ajuste de acordo com seu código
+                    fireball.explode()
+                    break
+                
+            # Remover fireball se sair da tela ou invisível
+            if not fireball.visible:
+                self.fireballs.remove(fireball)
 
         if self.fireball_cooldown > 0:
             self.fireball_cooldown -= 1
@@ -208,9 +237,11 @@ class Game:
                 print("Mario pegou a flor de fogo!")
                 self.mario.virar_fogo(forcar=False)
                 self.flor = None
+
         # Atualiza Mario
         if self.mario:
             self.mario.update()
+
         # Anima Mario (correndo ou parado)
         skidding = False
         if self.vel_x < 0 and not self.mario.facing_left:
