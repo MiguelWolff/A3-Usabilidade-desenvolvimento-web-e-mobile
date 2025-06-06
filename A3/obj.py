@@ -428,56 +428,111 @@ class Fireball:
             pg.image.load(f"Assets/Sprites/Fireball{i}.png").convert_alpha()
             for i in range(4)
         ]
+        self.hit_frames = [
+            pg.image.load(f"Assets/Sprites/FireballHit{i}.png").convert_alpha()
+            for i in range(4)
+        ]
         self.current_frame = 0
         self.animation_timer = 0
         self.image = self.frames[0]
         self.rect = self.image.get_rect(center=(x, y))
-        self.vel_x = 5 * direction  # Direção depende da orientação do Mario
+        self.vel_x = 5 * direction
         self.vel_y = 0
         self.gravity = 1
         self.bounce = -6
         self.bouncing = False
-        self.visible = True  # Para controle de remoção
+        self.visible = True
+        self.exploding = False  # Está em modo explosão
+        self.explosion_done = False
 
-    def update(self, tiles):
-        # Movimento horizontal
+    def explode(self):
+        self.exploding = True
+        self.current_frame = 0
+        self.animation_timer = 0
+        self.vel_x = 0
+        self.vel_y = 0
+        self.bouncing = False
+
+    def update(self):
+        if not self.visible:
+            return
+
+        if self.exploding:
+            self.animation_timer += 1
+            if self.animation_timer >= 10:
+                self.current_frame += 1
+                self.animation_timer = 0
+                if self.current_frame >= len(self.hit_frames):
+                    self.explosion_done = True
+                    self.visible = False
+                    return
+            self.image = self.hit_frames[self.current_frame]
+            return
+
+        # Movimento normal da fireball
         self.rect.x += self.vel_x
 
-        # Animação
+        # Animação normal
         self.animation_timer += 1
         if self.animation_timer >= 10:
             self.current_frame = (self.current_frame + 1) % len(self.frames)
             self.image = self.frames[self.current_frame]
             self.animation_timer = 0
 
-        # Gravidade e quique vertical
+        # Gravidade e quique vertical (se quiser manter)
         if not self.bouncing:
             self.vel_y += self.gravity
             self.rect.y += self.vel_y
 
-        # Colisão com blocos (tiles)
-        collided = False
-        for tile in tiles:
-            if self.rect.colliderect(tile.get_rect()):
-                # Ajusta posição para cima do bloco
-                self.rect.bottom = tile.get_rect().top
-                self.vel_y = self.bounce
-                self.bouncing = True
-                collided = True
-                break
-        
-        if not collided:
-            self.bouncing = False
-
         CHAO_Y = 270
         if self.rect.bottom >= CHAO_Y:
             self.rect.bottom = CHAO_Y
-            self.vel_y = 0
-            self.bouncing = False
-    
-        # Se a fireball sair da tela (exemplo: x < 0 ou x > 2000)
-        if self.rect.right < 0 or self.rect.left > 2000:
-            self.visible = False
+            self.vel_y = self.bounce
+            self.bouncing = True
 
     def draw(self, window, camera_x):
-        window.blit(self.image, (self.rect.x - camera_x, self.rect.y))
+        if self.visible:
+            window.blit(self.image, (self.rect.x - camera_x, self.rect.y))
+
+
+class Coin:
+    def __init__(self, x, y):
+        self.frames = [
+            pg.image.load(f"Assets/Sprites/Coin{i}.png").convert_alpha()
+            for i in range(6)  # supondo 6 frames para animação da moeda
+        ]
+        self.current_frame = 0
+        self.animation_timer = 0
+        self.image = self.frames[0]
+        self.rect = self.image.get_rect(topleft=(x, y))
+        
+        self.vel_y = -2  # movimento suave de subida
+        self.max_rise = 16  # sobe 16 pixels (1 bloco)
+        self.spawn_y = y
+        self.target_y = y - self.max_rise
+        
+        self.finished_spawning = False
+        self.collected = False  # flag para indicar se a moeda foi coletada
+
+    def draw(self, window, camera_x):
+        if not self.collected:
+            window.blit(self.image, (self.rect.x - camera_x, self.rect.y))
+
+    def update(self):
+        # animação dos frames da moeda
+        self.animation_timer += 1
+        if self.animation_timer >= 8:  # controle da velocidade da animação
+            self.current_frame = (self.current_frame + 1) % len(self.frames)
+            self.image = self.frames[self.current_frame]
+            self.animation_timer = 0
+
+        # movimento de subida até a posição final
+        if not self.finished_spawning:
+            self.rect.y += self.vel_y
+            if self.rect.y <= self.target_y:
+                self.rect.y = self.target_y
+                self.finished_spawning = True
+
+    def collect(self):
+        # método para chamar quando o jogador pegar a moeda
+        self.collected = True
