@@ -53,6 +53,8 @@ class Game:
         ]
         self.fireballs = []
         self.fireball_cooldown = 0
+        self.inimigos = [self.goomba] + self.koopas
+        self.inimigo = None
 
 
     def draw(self, window):
@@ -173,14 +175,24 @@ class Game:
                         fireball.rect.right > bloco.get_rect().right):
                         fireball.explode()
                         break
-                    
+            
+            self.inimigos = []
+            if self.goomba:
+                self.inimigos.append(self.goomba)
+            self.inimigos += [k for k in self.koopas if k.visible]
+
             # Colisão com inimigos
             for inimigo in self.inimigos:
-                if fireball.rect.colliderect(inimigo.get_rect()):
+                self.inimigo = inimigo
+                inimigo.rect = self.inimigo.rect
+                if fireball.rect.colliderect(inimigo.rect):
                     inimigo.morrer()  # Ajuste de acordo com seu código
                     fireball.explode()
                     break
-                
+            """if fireball.rect.colliderect(self.goomba.rect):
+                self.goomba.morrer()
+                fireball.explode()
+                break"""
             # Remover fireball se sair da tela ou invisível
             if not fireball.visible:
                 self.fireballs.remove(fireball)
