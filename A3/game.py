@@ -33,7 +33,10 @@ class Game:
         self.cogumelo = None
         self.estrela = None
         self.flor = None
+        self.coin = None
         self.crouching = False
+        self.invencivel_timer = 0
+        self.invencivel = False
 
         self.blocos = [
             Bloco(200, altura - 80, tipo="brown"),
@@ -43,7 +46,8 @@ class Game:
             QuestionBlock(400, altura - 80, tema="castle", contem_estrela=True),
             QuestionBlock(450, altura - 80, tema="dark", contem_cogumelo=True),
             QuestionBlock(500, altura - 80, tema="normal", contem_cogumelo_vida=True),
-            QuestionBlock(550, altura - 80, tema="castle", contem_flor=True)
+            QuestionBlock(550, altura - 80, tema="castle", contem_flor=True),
+            QuestionBlock(600, altura - 80, tema="dark", contem_moeda=True)
         ]
         self.bowser = Bowser(600, altura - 62)
         self.koopas = [
@@ -86,6 +90,9 @@ class Game:
         if self.bowser:
             self.bowser.draw(window, camera_x)
 
+        if self.coin:
+            self.coin.draw(window, camera_x)
+
         for koopa in self.koopas:
             koopa.draw(window, camera_x)
 
@@ -103,6 +110,15 @@ class Game:
 
 
     def update(self):
+        if self.invencivel:
+            self.invencivel_timer -= 1
+            if self.invencivel_timer <= 0:
+                self.invencivel = False
+        self.inimigos = []
+        if self.goomba:
+            self.inimigos.append(self.goomba)
+        self.inimigos += [k for k in self.koopas if k.visible]
+
         # Atualiza posição horizontal do Mario no mundo
         self.mario_world_x += self.vel_x
 
@@ -146,6 +162,8 @@ class Game:
                             self.estrela = novo_item
                         elif isinstance(novo_item, FlorDeFogo):
                             self.flor = novo_item
+                        elif isinstance(novo_item, Coin):
+                            self.coin = novo_item
                 else:
                     # Colisão lateral
                     if self.vel_x > 0:
@@ -189,10 +207,6 @@ class Game:
                     inimigo.morrer()  # Ajuste de acordo com seu código
                     fireball.explode()
                     break
-            """if fireball.rect.colliderect(self.goomba.rect):
-                self.goomba.morrer()
-                fireball.explode()
-                break"""
             # Remover fireball se sair da tela ou invisível
             if not fireball.visible:
                 self.fireballs.remove(fireball)
@@ -209,14 +223,14 @@ class Game:
             self.goomba.update(2000)
 
         # Colisão com Goomba
-        if self.goomba and mario_real_rect.colliderect(self.goomba.rect):
+        """if self.goomba and mario_real_rect.colliderect(self.goomba.rect):
             if self.vel_y > 0 and mario_real_rect.bottom <= self.goomba.rect.top + 10:
                 print("Goomba derrotado!")
                 self.vel_y = -8
                 self.goomba.morrer()
             else:
                 print("Mario colidiu com o Goomba (lado ou baixo)")
-                # Aqui poderia tratar perda de vida etc.
+                # Aqui poderia tratar perda de vida etc."""
 
         if self.goomba and not self.goomba.alive:
             self.goomba = None
@@ -249,7 +263,15 @@ class Game:
                 print("Mario pegou a flor de fogo!")
                 self.mario.virar_fogo(forcar=False)
                 self.flor = None
-
+        
+        # Atualiza Moeda
+        if self.coin:
+            self.coin.update()
+            if mario_real_rect.colliderect(self.coin.rect):
+                self.coin.collect()
+                print("Mario pegou a moeda")
+                self.coin = None
+        
         # Atualiza Mario
         if self.mario:
             self.mario.update()
@@ -278,13 +300,61 @@ class Game:
             koopa.update(2000)
         self.koopas = [k for k in self.koopas if k.visible]
             # Verifica colisão koopastroopas
-        for koopa in self.koopas:
+        """for koopa in self.koopas:
             if mario_real_rect.colliderect(koopa.get_rect()):
                 if self.vel_y > 0 and mario_real_rect.bottom <= koopa.get_rect().top + 10:
                     self.vel_y = -8
                     koopa.morrer()
                 else:
-                    print("Mario colidiu com o Koopa!")
+                    print("Mario colidiu com o Koopa!")"""
+        
+        current_time = pg.time.get_ticks()
+        for inimigo in self.inimigos:
+            if mario_real_rect.colliderect(inimigo.rect):
+                if self.mario.estrela:
+                    inimigo.morrer()
+                    continue
+                
+                # Verifica se Mario está caindo e colidindo por cima
+                if self.vel_y > 0 and self.mario.sprite.rect.bottom <= inimigo.rect.top + 10:
+                    self.vel_y = -10  # Rebote do pulo
+                    inimigo.morrer()
+                    continue
+                
+                # Caso contrário, é dano (lateral ou por baixo)
+                if not self.invencivel:
+                    self.invencivel = True
+                    self.invencivel_timer = 60  # 1 segundo
+
+                    if self.mario.fogo:
+                        print("Mario perdeu o poder de fogo!")
+                        self.mario.fogo = False
+                        self.mario.crescer(forcar=True)
+                    elif self.mario.big:
+                        print("Mario voltou a ser pequeno!")
+                        self.mario.big = False
+                        self.mario.image_idle = pg.image.load("Assets/Sprites/Mario.png").convert_alpha()
+                        self.mario.frames = [
+                            pg.image.load(f"Assets/Sprites/MarioRun{i}.png").convert_alpha()
+                            for i in range(3)
+                        ]
+                        self.mario.image_jump = pg.image.load("Assets/Sprites/MarioJumping.png").convert_alpha()
+                        self.mario.image_skid = pg.image.load("Assets/Sprites/MarioSkidding.png").convert_alpha()
+                        self.mario.sprite.image = self.mario.image_idle
+                        rect = self.mario.sprite.rect
+                        self.mario.sprite.rect = self.mario.image_idle.get_rect(topleft=(rect.x, rect.y + 32))
+                    else:
+                        self.vidas -= 1
+                        print(f"Mario perdeu uma vida! Vidas restantes: {self.vidas}")
+                        if self.vidas <= 0:
+                            print("MARIO MORREU")
+                            self.__init__(self.LARGURA, self.ALTURA)
+                            return
+                        """if self.vidas <= 0:
+                            print("MARIO MORREU")
+                            self.__init__(self.LARGURA, self.ALTURA)
+                            return"""
+
 
     def events(self, event):
         # Evento de teclado mais responsivo e correto
