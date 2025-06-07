@@ -13,7 +13,7 @@ class Obj:
         self.estrela_timer = 0
         self.estado_pre_estrela = None
         self.fireballs = []
-        self.fireball_cooldown = 0  # corrigido o nome para singular
+        self.fireball_cooldown = 0 
 
         self.image_idle = pg.image.load(image_idle).convert_alpha()
         self.image_jump = pg.image.load("Assets/Sprites/MarioJumping.png").convert_alpha()
@@ -291,7 +291,7 @@ class Cogumelo:
         return self.rect
 
 class QuestionBlock(Bloco):
-    def __init__(self, x, y, tema="brown", contem_cogumelo=False, contem_estrela=False, contem_flor=False, contem_cogumelo_vida=False):
+    def __init__(self, x, y, tema="brown", contem_cogumelo=False, contem_estrela=False, contem_flor=False, contem_cogumelo_vida=False, contem_moeda=False):
         self.ativo = True
         super().__init__(x, y, tipo="question", tema=tema)
         self.frames = self.load_frames(tema)
@@ -302,6 +302,7 @@ class QuestionBlock(Bloco):
         self.contem_estrela = contem_estrela
         self.contem_flor = contem_flor
         self.contem_cogumelo_vida = contem_cogumelo_vida
+        self.contem_moeda = contem_moeda
 
     def load_frames(self, tema):
         prefix = "QuestionBlock"
@@ -342,6 +343,9 @@ class QuestionBlock(Bloco):
 
         if self.contem_flor:
             return FlorDeFogo(self.rect.x, self.rect.y)
+        
+        if self.contem_moeda:
+            return Coin(self.rect.x, self.rect.y)
         return None
 
 class Estrela:
@@ -494,7 +498,6 @@ class Fireball:
         if self.visible:
             window.blit(self.image, (self.rect.x - camera_x, self.rect.y))
 
-
 class Coin:
     def __init__(self, x, y):
         self.frames = [
@@ -536,3 +539,7 @@ class Coin:
     def collect(self):
         # método para chamar quando o jogador pegar a moeda
         self.collected = True
+
+class Flag:
+    def __init__(self):
+        pass
