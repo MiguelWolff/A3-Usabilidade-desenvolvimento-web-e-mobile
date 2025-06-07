@@ -11,7 +11,7 @@ class Menu:
         self.fases = False
 
         # Carrega a imagem de fundo
-        self.fundo = pg.image.load("A2/Assets/Sprites/level_1.png").convert()
+        self.fundo = pg.image.load("Assets/Sprites/level_1.png").convert()
         largura_original = self.fundo.get_width()
         self.fundo = pg.transform.scale(self.fundo, (largura_original, 300))  #escala apenas no eixo Y
         #self.fundo = pg.transform.scale(self.fundo, (480, 244))  # ajuste para o tamanho da janela caso precise
