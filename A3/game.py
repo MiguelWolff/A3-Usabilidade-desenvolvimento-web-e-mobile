@@ -150,7 +150,7 @@ class Game:
                     mario_real_rect.bottom = bloco_rect.top
                     self.vel_y = 0
                     self.no_chao = True
-                elif self.vel_y < 0 and mario_real_rect.top >= bloco_rect.bottom - 10:
+                elif self.vel_y < 0 and mario_real_rect.top - self.vel_y >= bloco_rect.bottom:
                     # Mario bateu na parte inferior do bloco
                     mario_real_rect.top = bloco_rect.bottom
                     self.vel_y = 0
