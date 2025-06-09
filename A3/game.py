@@ -145,7 +145,7 @@ class Game:
         for bloco in self.blocos:
             bloco_rect = bloco.get_rect()
             if mario_real_rect.colliderect(bloco_rect):
-                if self.vel_y > 0 and mario_real_rect.bottom <= bloco_rect.top + 10:
+                if self.vel_y > 0 and mario_real_rect.bottom - self.vel_y <= bloco_rect.top:
                     # Mario caiu sobre bloco
                     mario_real_rect.bottom = bloco_rect.top
                     self.vel_y = 0
