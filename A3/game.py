@@ -17,7 +17,7 @@ class Game:
         self.ALTURA = altura
 
         self.change_scene = False
-
+        self.pulo = pg.mixer.Sound("Assets/Audio/jump.wav")
         self.mario_world_x = 0
         self.mario_screen_x = 50
         self.mario_y = altura - 120
@@ -369,6 +369,7 @@ class Game:
             elif event.key == pg.K_SPACE and self.no_chao:
                 self.vel_y = IMPULSO_PULO
                 self.no_chao = False
+                self.pulo.play()
             elif event.key == pg.K_DOWN:
                 self.crouching = True
             elif event.key == pg.K_b:
