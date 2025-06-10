@@ -17,29 +17,40 @@ class Menu:
         self.fundo = pg.transform.scale(self.fundo, (largura_original, 300))  #escala apenas no eixo Y
         #self.fundo = pg.transform.scale(self.fundo, (480, 244))  # ajuste para o tamanho da janela caso precise
 
-    def desenhar_texto(self, window, texto, fonte, cor, centro):
+    def desenhar_texto(self, window, texto, fonte, cor, centro, bg=None, padding=10):
+        """Renderiza e desenha o texto centralizado, com fundo e margem."""
         superficie = fonte.render(texto, True, cor)
-        ret = superficie.get_rect(center=centro)
-        window.blit(superficie, ret)
-        return ret
+        texto_rect = superficie.get_rect(center=centro)
+
+        if bg:
+            fundo_rect = pg.Rect(
+                texto_rect.left - padding,
+                texto_rect.top - padding,
+                texto_rect.width + padding * 2,
+                texto_rect.height + padding * 2
+            )
+            pg.draw.rect(window, bg, fundo_rect, border_radius=6)
+
+        window.blit(superficie, texto_rect)
+        return texto_rect
 
     def tela_comandos(self, window):
         """Tela que mostra os comandos do jogo."""
         window.blit(self.fundo, (0, 0))  # desenha o fundo
-        self.desenhar_texto(window, "Comandos do Jogo", self.fonte_titulo, (255, 255, 255), (window.get_width() // 2, 80))
+        self.desenhar_texto(window, "Comandos do Jogo", self.fonte_titulo, "White", (window.get_width() // 2, 50), bg=("Dark Blue"), padding=6)
         comandos = [
             "Setas - Mover",
             "Espaço - Pular",
-            "ESC - Voltar ao menu",
-            "B - Especial"
+            "B - Especial",
+            "ESC - Voltar ao menu"
         ]
         for i, texto in enumerate(comandos):
-            self.desenhar_texto(window, texto, self.fonte_opcao, (255, 255, 255), (window.get_width() // 2, 160 + i * 40))
+            self.desenhar_texto(window, texto, self.fonte_opcao, "White", (window.get_width() // 2, 110 + i * 40))
 
     def tela_fases(self, window):
         """Tela que mostra as opções de fase."""
         window.blit(self.fundo, (0, 0))  # desenha o fundo
-        self.desenhar_texto(window, "Seletor de Fases", self.fonte_titulo, (255, 255, 255), (window.get_width() // 2, 80))
+        self.desenhar_texto(window, "Seletor de Fases", self.fonte_titulo, (255, 255, 255), (window.get_width() // 2, 50), bg=("Dark Blue"), padding=6)
         fases = [
             "1 - Floresta",
             "2 - Deserto",
@@ -47,7 +58,7 @@ class Menu:
             "ESC - Voltar ao menu"
         ]
         for i, texto in enumerate(fases):
-            self.desenhar_texto(window, texto, self.fonte_opcao, (255, 255, 255), (window.get_width() // 2, 160 + i * 40))
+            self.desenhar_texto(window, texto, self.fonte_opcao, (255, 255, 255), (window.get_width() // 2, 110 + i * 40))
 
     def draw(self, window):
         """Desenha o menu ou uma tela de submenu."""
@@ -56,11 +67,11 @@ class Menu:
         elif self.fases:
             self.tela_fases(window)
         else:
-            window.fill((0, 0, 0))
-            self.desenhar_texto(window, "Mario Bros", self.fonte_titulo, (255, 255, 255), (window.get_width() // 2, 80))
+            window.blit(self.fundo, (0, 0))  # desenha o fundo
+            self.desenhar_texto(window, "Mario Bros", self.fonte_titulo, "White", (window.get_width() // 2, 50), bg=("Dark Blue"), padding=6)
             for i, texto in enumerate(self.opcoes):
-                cor = (255, 255, 0) if i == self.opcao_selecionada else (255, 255, 255)
-                self.desenhar_texto(window, texto, self.fonte_opcao, cor, (window.get_width() // 2, 160 + i * 40))
+                cor = (255, 255, 0) if i == self.opcao_selecionada else "White"
+                self.desenhar_texto(window, texto, self.fonte_opcao, cor, (window.get_width() // 2, 110 + i * 40))
 
     def events(self, event):
         """Processa eventos do menu."""
@@ -104,10 +115,13 @@ class FinalScreen:
         self.finished = False
         self.font = pg.font.SysFont("Arial", 20, True)
         self.big_font = pg.font.SysFont("Arial", 30, True)
+        self.fundo = pg.image.load("Assets/Sprites/level_1.png").convert()
+        largura_original = self.fundo.get_width()
+        self.fundo = pg.transform.scale(self.fundo, (largura_original, 300))  #escala apenas no eixo Y
 
     def draw(self, window):
-        window.fill((0, 0, 0))
-        texto1 = self.big_font.render("Parabéns!", True, (255, 255, 0))
+        window.blit(self.fundo, (0, 0))  # desenha o fundo
+        texto1 = self.big_font.render("Parabéns!", True, (255, 255, 0), "Dark Blue")
         texto2 = self.font.render("Você concluiu todas as fases.", True, (255, 255, 255))
         texto3 = self.font.render("Pressione qualquer tecla para sair.", True, (200, 200, 200))
         window_width, window_height = window.get_size()
