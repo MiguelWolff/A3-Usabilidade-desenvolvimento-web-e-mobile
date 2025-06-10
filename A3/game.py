@@ -261,7 +261,7 @@ class Game:
                 self.inimigo = inimigo
                 inimigo.rect = self.inimigo.rect
                 if fireball.rect.colliderect(inimigo.rect):
-                    inimigo.morrer()  # Ajuste de acordo com seu código
+                    inimigo.morrer()
                     fireball.explode()
                     break
             # Remover fireball se sair da tela ou invisível
@@ -373,6 +373,7 @@ class Game:
 
         if self.bowser:
             self.bowser.update(2000)
+            self.inimigos.append(self.bowser)
             if mario_real_rect.colliderect(self.bowser.get_rect()):
                 print("Mario colidiu com o Bowser")
 
@@ -390,7 +391,6 @@ class Game:
                 coin.collect()
                 self.moedas.remove(coin)
         
-        current_time = pg.time.get_ticks()
         for inimigo in self.inimigos:
             if mario_real_rect.colliderect(inimigo.rect):
                 if self.mario.estrela:
@@ -398,7 +398,7 @@ class Game:
                     continue
                 
                 # Verifica se Mario está caindo e colidindo por cima
-                if self.vel_y > 0 and self.mario.sprite.rect.bottom <= inimigo.rect.top + 10:
+                if self.vel_y > 0 and self.mario.sprite.rect.bottom <= inimigo.rect.top + 10 and not inimigo == self.bowser:
                     self.vel_y = -10  # Rebote do pulo
                     inimigo.morrer()
                     continue
