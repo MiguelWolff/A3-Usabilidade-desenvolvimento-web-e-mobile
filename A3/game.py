@@ -75,10 +75,14 @@ class Game:
                            Bloco(-16, CHAO_Y + 16), 
                            Bloco(-16, CHAO_Y - 64), 
                            Bloco(-16, CHAO_Y - 80),
-                           QuestionBlock(350, CHAO_Y - 64, contem_cogumelo=True),
-                           QuestionBlock(420, CHAO_Y - 64, contem_cogumelo=True),
+                           Bloco(318, CHAO_Y -61),
+                           Bloco(334, CHAO_Y -61),
+                           Bloco(366, CHAO_Y -61),
+                           QuestionBlock(350, CHAO_Y - 61, contem_cogumelo=True),
+                           QuestionBlock(700, CHAO_Y - 61, contem_cogumelo_vida=True),
                            Bloco(400,CHAO_Y - 16)]
-            self.goombas = [Goomba(500, CHAO_Y - 15)]
+            self.goombas = [Goomba(300, CHAO_Y - 15),
+                            Goomba(600, CHAO_Y - 15)]
             self.moedas = [Coin(400, CHAO_Y - 100)]
             self.flag = Flag(1800, CHAO_Y - 15)
 
