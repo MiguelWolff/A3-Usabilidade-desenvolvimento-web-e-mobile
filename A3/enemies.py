@@ -45,15 +45,17 @@ class Goomba(pg.sprite.Sprite):
         self.alive = False
         self.image = self.dead_image
         self.death_timer = 0
-
+        self.rect.topleft = (-1000, -1000)
+        
     def draw(self, window, camera_x):
         # Desenha somente se vivo ou ainda dentro do tempo da animação da morte
         if self.alive or self.death_timer < 60:
             window.blit(self.image, (self.rect.x - camera_x, self.rect.y))
 
 
-class Bowser:
+class Bowser(pg.sprite.Sprite):
     def __init__(self, x, y):
+        super().__init__()
         self.frames = [
             pg.image.load("Assets/Sprites/Bowser0.png").convert_alpha(),
             pg.image.load("Assets/Sprites/Bowser1.png").convert_alpha()
@@ -66,9 +68,13 @@ class Bowser:
         self.direction = -1
         self.speed = 1
         self.alive = True
+        self.death_timer = 0
 
     def update(self, world_width):
         if not self.alive:
+            self.death_timer += 1
+            if self.death_timer >= 60:  # 1 segundo a 60 FPS
+                self.kill()  # remove o sprite do grupo
             return
 
         self.animation_timer += 1
@@ -92,8 +98,9 @@ class Bowser:
     def morrer(self):
         self.alive = False
 
-class KoopaTroopa:
+class KoopaTroopa(pg.sprite.Sprite):
     def __init__(self, x, y, tipo="verde"):
+        super().__init__()
         self.tipo = tipo
         self.frames = self.load_frames(tipo)
         self.current_frame = 0
