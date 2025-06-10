@@ -1,6 +1,6 @@
 import pygame as pg
 
-class Obj:
+class Mario:
     def __init__(self, image_idle, x, y, animated=False):
         self.group = pg.sprite.Group()
         self.sprite = pg.sprite.Sprite(self.group)
@@ -14,7 +14,7 @@ class Obj:
         self.estado_pre_estrela = None
         self.fireballs = []
         self.fireball_cooldown = 0 
-
+        self.som_estrela = pg.mixer.Sound("Assets/Audio/hurryup.wav")
         self.image_idle = pg.image.load(image_idle).convert_alpha()
         self.image_jump = pg.image.load("Assets/Sprites/MarioJumping.png").convert_alpha()
         self.image_skid = pg.image.load("Assets/Sprites/MarioSkidding.png").convert_alpha()
@@ -78,7 +78,7 @@ class Obj:
 
         if not self.big and not self.fogo:
             self.crescer()
-
+        self.som_estrela.play(loops=-1)
         self.estrela = True
         self.estrela_timer = 600  # Duração da invencibilidade (~10 segundos a 60 FPS)
 
@@ -120,6 +120,7 @@ class Obj:
             self.estrela_timer -= 1
             if self.estrela_timer <= 0:
                 self.estrela = False
+                self.som_estrela.stop()
                 print("Acabou estrela")
                 if self.estado_pre_estrela == "fogo":
                     self.virar_fogo(forcar=True)
@@ -358,7 +359,6 @@ class Estrela:
         self.animation_timer = 0
         self.image = self.frames[0]
         self.rect = self.image.get_rect(topleft=(x, y))
-
         self.direction = 1
         self.vel_y = -10  # impulso inicial para pulo
         self.gravity = 1
@@ -504,6 +504,7 @@ class Coin:
             pg.image.load(f"Assets/Sprites/Coin{i}.png").convert_alpha()
             for i in range(6)  # supondo 6 frames para animação da moeda
         ]
+        self.som_moeda = pg.mixer.Sound("Assets/Audio/coin.wav")
         self.current_frame = 0
         self.animation_timer = 0
         self.image = self.frames[0]
@@ -538,8 +539,16 @@ class Coin:
 
     def collect(self):
         # método para chamar quando o jogador pegar a moeda
+        self.som_moeda.play()
         self.collected = True
 
 class Flag:
-    def __init__(self):
-        pass
+    def __init__(self, x, y):
+        self.image = pg.image.load("Assets/Sprites/Flag.png")
+        self.rect = self.image.get_rect(topleft=(x, y))
+
+    def draw(self, window, camera_x):
+        window.blit(self.image, (self.rect.x - camera_x, self.rect.y))
+
+    def get_rect(self):
+        return self.rect
