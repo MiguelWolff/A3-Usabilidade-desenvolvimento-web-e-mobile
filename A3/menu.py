@@ -9,6 +9,7 @@ class Menu:
         self.change_scene = False
         self.comandos = False
         self.fases = False
+        self.fase_selecionada = 1
 
         # Carrega a imagem de fundo
         self.fundo = pg.image.load("Assets/Sprites/level_1.png").convert()
@@ -66,9 +67,25 @@ class Menu:
         if event.type == pg.KEYDOWN:
             if self.comandos or self.fases:
                 if event.key == pg.K_ESCAPE:
+                    # Voltar ao menu principal
                     self.comandos = False
                     self.fases = False
+                elif self.fases:
+                    # Seletor de fases ativo, escolher fase com as teclas 1, 2, 3
+                    if event.key == pg.K_1:
+                        self.fase_selecionada = 1
+                        self.change_scene = True
+                        self.fases = False
+                    elif event.key == pg.K_2:
+                        self.fase_selecionada = 2
+                        self.change_scene = True
+                        self.fases = False
+                    elif event.key == pg.K_3:
+                        self.fase_selecionada = 3
+                        self.change_scene = True
+                        self.fases = False
             else:
+                # Menu principal: navegação com setas
                 if event.key == pg.K_UP:
                     self.opcao_selecionada = (self.opcao_selecionada - 1) % len(self.opcoes)
                 elif event.key == pg.K_DOWN:
@@ -76,7 +93,29 @@ class Menu:
                 elif event.key in (pg.K_RETURN, pg.K_KP_ENTER):
                     if self.opcao_selecionada == 0:
                         self.change_scene = True
+                        self.fase_selecionada = 1  # padrão, fase 1
                     elif self.opcao_selecionada == 1:
                         self.comandos = True
                     elif self.opcao_selecionada == 2:
                         self.fases = True
+
+class FinalScreen:
+    def __init__(self):
+        self.finished = False
+        self.font = pg.font.SysFont("Arial", 20, True)
+        self.big_font = pg.font.SysFont("Arial", 30, True)
+
+    def draw(self, window):
+        window.fill((0, 0, 0))
+        texto1 = self.big_font.render("Parabéns!", True, (255, 255, 0))
+        texto2 = self.font.render("Você concluiu todas as fases.", True, (255, 255, 255))
+        texto3 = self.font.render("Pressione qualquer tecla para sair.", True, (200, 200, 200))
+        window_width, window_height = window.get_size()
+        window.blit(texto1, (window_width//2 - texto1.get_width()//2, 60))
+        window.blit(texto2, (window_width//2 - texto2.get_width()//2, 120))
+        window.blit(texto3, (window_width//2 - texto3.get_width()//2, 180))
+
+
+    def events(self, event):
+        if event.type == pg.KEYDOWN or event.type == pg.QUIT:
+            self.finished = True
