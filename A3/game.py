@@ -1,12 +1,12 @@
 import pygame as pg
-from obj import Obj, Bloco, Cogumelo, QuestionBlock, Estrela, FlorDeFogo, Fireball, Coin
+from obj import Mario, Bloco, Cogumelo, QuestionBlock, Estrela, FlorDeFogo, Fireball, Coin, Flag
 from enemies import Goomba, Bowser, KoopaTroopa
 
 # Constantes
 AZUL = (135, 206, 235)
 VERDE = (34, 139, 34)
 GRAVIDADE = 1
-VELOCIDADE = 4
+VELOCIDADE = 3
 IMPULSO_PULO = -12
 CHAO_Y = 270  # Altura do chão fixo (ALTURA - 30 do seu código)
 
@@ -15,21 +15,18 @@ class Game:
     def __init__(self, largura, altura):
         self.LARGURA = largura
         self.ALTURA = altura
-
         self.change_scene = False
         self.pulo = pg.mixer.Sound("Assets/Audio/jump.wav")
+        self.som_estrela = pg.mixer.Sound("Assets/Audio/hurryup.wav")
+        self.som_fireball = pg.mixer.Sound("Assets/Audio/fireball.wav")
         self.mario_world_x = 0
         self.mario_screen_x = 50
         self.mario_y = altura - 120
-
         self.vel_x = 0
         self.vel_y = 0
         self.no_chao = False
         self.vidas = 3
-
-        self.mario = Obj("Assets/Sprites/Mario.png", self.mario_screen_x, self.mario_y, animated=True)
-
-        self.goomba = Goomba(300, altura - 45)
+        self.mario = Mario("Assets/Sprites/Mario.png", self.mario_screen_x, self.mario_y, animated=True)
         self.cogumelo = None
         self.estrela = None
         self.flor = None
@@ -37,29 +34,57 @@ class Game:
         self.crouching = False
         self.invencivel_timer = 0
         self.invencivel = False
-
-        self.blocos = [
-            Bloco(200, altura - 80, tipo="brown"),
-            Bloco(250, altura - 80, tipo="castle"),
-            Bloco(300, altura - 80, tipo="dark"),
-            QuestionBlock(350, altura - 80, tema="normal", contem_flor=True),
-            QuestionBlock(400, altura - 80, tema="castle", contem_estrela=True),
-            QuestionBlock(450, altura - 80, tema="dark", contem_cogumelo=True),
-            QuestionBlock(500, altura - 80, tema="normal", contem_cogumelo_vida=True),
-            QuestionBlock(550, altura - 80, tema="castle", contem_flor=True),
-            QuestionBlock(600, altura - 80, tema="dark", contem_moeda=True)
-        ]
+        self.goombas = []
+        self.blocos = []
         self.bowser = Bowser(600, altura - 62)
-        self.koopas = [
-            KoopaTroopa(500, altura - 55, tipo="verde"),
-            KoopaTroopa(600, altura - 55, tipo="verde_casco_azul"),
-            KoopaTroopa(700, altura - 55, tipo="vermelho")
-        ]
+        self.koopas = []
         self.fireballs = []
         self.fireball_cooldown = 0
-        self.inimigos = [self.goomba] + self.koopas
+        self.inimigos = [self.bowser] + self.koopas + self.goombas
         self.inimigo = None
+        self.flag = None
+        self.moedas = []
+        self.fase_atual = 1
+        self.total_fases = 3
+        self.carregar_fase(self.fase_atual)
+        self.main = None
 
+    def carregar_fase(self, fase):
+        # Limpa os elementos anteriores
+        self.blocos = []
+        self.goombas = []
+        self.koopas = []
+        self.moedas = []
+        self.bowser = None
+        self.cogumelo = None
+        self.estrela = None
+        self.flor = None
+        self.coin = None
+
+        # Resetar posição do Mario
+        self.mario_world_x = 0
+        self.mario.sprite.rect.y = self.ALTURA - 120
+
+        if fase == 1:
+            self.blocos.append(Bloco(300, CHAO_Y - 40))
+            self.blocos.append(QuestionBlock(350, CHAO_Y - 40, contem_cogumelo=True))
+            self.goombas.append(Goomba(500, CHAO_Y - 15))
+            self.moedas.append(Coin(400, CHAO_Y - 100))
+            self.flag = Flag(600, CHAO_Y - 15)
+
+        elif fase == 2:
+            self.blocos.append(Bloco(200, CHAO_Y - 40))
+            self.blocos.append(QuestionBlock(250, CHAO_Y - 40, contem_estrela=True))
+            self.koopas.append(KoopaTroopa(450, CHAO_Y - 25))
+            self.moedas.append(Coin(300, CHAO_Y - 100))
+            self.flag = Flag(800, CHAO_Y - 15)
+
+        elif fase == 3:
+            self.blocos.append(Bloco(100, CHAO_Y - 40))
+            self.blocos.append(QuestionBlock(150, CHAO_Y - 40, contem_flor=True))
+            self.bowser = Bowser(600, self.ALTURA - 62)
+            self.moedas.append(Coin(350, CHAO_Y - 100))
+            self.flag = Flag(1000, CHAO_Y - 15)
 
     def draw(self, window):
         window.fill(AZUL)
@@ -75,11 +100,14 @@ class Game:
                 bloco.update()
 
         # Desenha inimigos e itens
-        if self.goomba:
-            self.goomba.draw(window, camera_x)
+        for goomba in self.goombas:
+            goomba.draw(window, camera_x)
 
         if self.cogumelo:
             self.cogumelo.draw(window, camera_x)
+
+        if self.flag:
+            self.flag.draw(window, camera_x)
 
         if self.estrela:
             self.estrela.draw(window, camera_x)
@@ -99,6 +127,9 @@ class Game:
         for fireball in self.fireballs:
             fireball.draw(window, camera_x)
 
+        for coin in self.moedas:
+            coin.draw(window, camera_x)
+
         # Desenha Mario (sprite fixo na tela)
         self.mario.sprite.rect.x = self.mario_screen_x
         self.mario.draw(window)
@@ -108,15 +139,15 @@ class Game:
         vidas_texto = font.render(f"Vidas: {self.vidas}", True, (255, 255, 255))
         window.blit(vidas_texto, (10, 10))
 
-
     def update(self):
         if self.invencivel:
             self.invencivel_timer -= 1
             if self.invencivel_timer <= 0:
                 self.invencivel = False
         self.inimigos = []
-        if self.goomba:
-            self.inimigos.append(self.goomba)
+        self.inimigos += [g for g in self.goombas]
+        if self.bowser:
+            self.inimigos.append(self.bowser)
         self.inimigos += [k for k in self.koopas if k.visible]
 
         # Atualiza posição horizontal do Mario no mundo
@@ -195,8 +226,7 @@ class Game:
                         break
             
             self.inimigos = []
-            if self.goomba:
-                self.inimigos.append(self.goomba)
+            self.inimigos += [g for g in self.goombas]
             self.inimigos += [k for k in self.koopas if k.visible]
 
             # Colisão com inimigos
@@ -219,21 +249,11 @@ class Game:
         self.mario.sprite.rect.y = mario_real_rect.y
 
         # Atualiza inimigos
-        if self.goomba:
-            self.goomba.update(2000)
-
-        # Colisão com Goomba
-        """if self.goomba and mario_real_rect.colliderect(self.goomba.rect):
-            if self.vel_y > 0 and mario_real_rect.bottom <= self.goomba.rect.top + 10:
-                print("Goomba derrotado!")
-                self.vel_y = -8
-                self.goomba.morrer()
-            else:
-                print("Mario colidiu com o Goomba (lado ou baixo)")
-                # Aqui poderia tratar perda de vida etc."""
-
-        if self.goomba and not self.goomba.alive:
-            self.goomba = None
+        for goomba in self.goombas:
+            goomba.update(2000)
+            if goomba and not goomba.alive:
+                goomba = None
+        self.goombas = [g for g in self.goombas]
 
         # Atualiza cogumelo
         if self.cogumelo:
@@ -252,7 +272,6 @@ class Game:
             self.estrela.update(2000)
             if mario_real_rect.colliderect(self.estrela.rect):
                 print("Estrela coletada! Mario invencível?")
-                # Implementar efeitos da estrela
                 self.mario.marioestrela()
                 self.estrela = None
 
@@ -299,14 +318,12 @@ class Game:
         for koopa in self.koopas:
             koopa.update(2000)
         self.koopas = [k for k in self.koopas if k.visible]
-            # Verifica colisão koopastroopas
-        """for koopa in self.koopas:
-            if mario_real_rect.colliderect(koopa.get_rect()):
-                if self.vel_y > 0 and mario_real_rect.bottom <= koopa.get_rect().top + 10:
-                    self.vel_y = -8
-                    koopa.morrer()
-                else:
-                    print("Mario colidiu com o Koopa!")"""
+
+        for coin in self.moedas[:]:
+            coin.update()
+            if mario_real_rect.colliderect(coin.rect):
+                coin.collect()
+                self.moedas.remove(coin)
         
         current_time = pg.time.get_ticks()
         for inimigo in self.inimigos:
@@ -346,14 +363,19 @@ class Game:
                     else:
                         self.vidas -= 1
                         print(f"Mario perdeu uma vida! Vidas restantes: {self.vidas}")
+                        self.carregar_fase(self.fase_atual)
                         if self.vidas <= 0:
                             print("MARIO MORREU")
-                            self.__init__(self.LARGURA, self.ALTURA)
-                            return
-                        """if self.vidas <= 0:
-                            print("MARIO MORREU")
-                            self.__init__(self.LARGURA, self.ALTURA)
-                            return"""
+                            self.carregar_fase(1)
+                            self.vidas = 3
+
+        if self.flag and mario_real_rect.colliderect(self.flag.rect):
+            if self.fase_atual >= self.total_fases:
+                print("Jogo concluído!")
+                # Aqui você pode encerrar ou resetar o jogo
+            else:
+                self.fase_atual += 1
+                self.carregar_fase(self.fase_atual)
 
 
     def events(self, event):
@@ -376,7 +398,7 @@ class Game:
                 if not self.mario.estrela:
                     if self.mario.fogo and self.fireball_cooldown == 0:
                         direction = 1 if not self.mario.facing_left else -1
-
+                        self.som_fireball.play()
                         # Posição X real de Mario no mundo (não a da tela)
                         mario_x = self.mario_world_x
                         mario_y = self.mario.sprite.rect.centery
@@ -389,7 +411,6 @@ class Game:
                         self.fireballs.append(fireball)
                         self.fireball_cooldown = 20
 
-                    
         elif event.type == pg.KEYUP:
             if event.key in [pg.K_LEFT, pg.K_RIGHT]:
                 self.vel_x = 0
