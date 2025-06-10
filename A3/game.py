@@ -5,6 +5,8 @@ from enemies import Goomba, Bowser, KoopaTroopa
 # Constantes
 AZUL = (135, 206, 235)
 VERDE = (34, 139, 34)
+AMARELO = (194, 178, 128)
+CINZA = (192, 192, 192)
 GRAVIDADE = 1
 VELOCIDADE = 3
 IMPULSO_PULO = -12
@@ -47,7 +49,7 @@ class Game:
         self.fase_atual = 1
         self.total_fases = 3
         self.carregar_fase(self.fase_atual)
-        self.main = None
+        self.callback_encerrar = None
 
     def carregar_fase(self, fase):
         # Limpa os elementos anteriores
@@ -66,24 +68,45 @@ class Game:
         self.mario.sprite.rect.y = self.ALTURA - 120
 
         if fase == 1:
-            self.blocos.append(Bloco(300, CHAO_Y - 40))
-            self.blocos.append(QuestionBlock(350, CHAO_Y - 40, contem_cogumelo=True))
-            self.goombas.append(Goomba(500, CHAO_Y - 15))
-            self.moedas.append(Coin(400, CHAO_Y - 100))
-            self.flag = Flag(600, CHAO_Y - 15)
+            self.blocos = [Bloco(-16, CHAO_Y - 32), 
+                           Bloco(-16, CHAO_Y), 
+                           Bloco(-16, CHAO_Y - 16), 
+                           Bloco(-16, CHAO_Y - 48), 
+                           Bloco(-16, CHAO_Y + 16), 
+                           Bloco(-16, CHAO_Y - 64), 
+                           Bloco(-16, CHAO_Y - 80),
+                           QuestionBlock(350, CHAO_Y - 64, contem_cogumelo=True),
+                           QuestionBlock(420, CHAO_Y - 64, contem_cogumelo=True),
+                           Bloco(400,CHAO_Y - 16)]
+            self.goombas = [Goomba(500, CHAO_Y - 15)]
+            self.moedas = [Coin(400, CHAO_Y - 100)]
+            self.flag = Flag(1800, CHAO_Y - 15)
 
         elif fase == 2:
-            self.blocos.append(Bloco(200, CHAO_Y - 40))
-            self.blocos.append(QuestionBlock(250, CHAO_Y - 40, contem_estrela=True))
-            self.koopas.append(KoopaTroopa(450, CHAO_Y - 25))
-            self.moedas.append(Coin(300, CHAO_Y - 100))
+            self.blocos = [Bloco(-16, CHAO_Y - 32), 
+                           Bloco(-16, CHAO_Y), 
+                           Bloco(-16, CHAO_Y - 16), 
+                           Bloco(-16, CHAO_Y - 48), 
+                           Bloco(-16, CHAO_Y + 16), 
+                           Bloco(-16, CHAO_Y - 64), 
+                           Bloco(-16, CHAO_Y - 80),
+                           QuestionBlock(250, CHAO_Y - 48, contem_flor=True)]
+            self.koopas = [KoopaTroopa(450, CHAO_Y - 25)]
+            self.moedas = [Coin(300, CHAO_Y - 100)]
             self.flag = Flag(800, CHAO_Y - 15)
 
         elif fase == 3:
-            self.blocos.append(Bloco(100, CHAO_Y - 40))
-            self.blocos.append(QuestionBlock(150, CHAO_Y - 40, contem_flor=True))
+            self.blocos = [Bloco(-16, CHAO_Y - 32), 
+                           Bloco(-16, CHAO_Y), 
+                           Bloco(-16, CHAO_Y - 16), 
+                           Bloco(-16, CHAO_Y - 48), 
+                           Bloco(-16, CHAO_Y + 16), 
+                           Bloco(-16, CHAO_Y - 64), 
+                           Bloco(-16, CHAO_Y - 80),
+                           QuestionBlock(150, CHAO_Y - 48, contem_estrela=True),
+                           Bloco(600, CHAO_Y - 32)]
             self.bowser = Bowser(600, self.ALTURA - 62)
-            self.moedas.append(Coin(350, CHAO_Y - 100))
+            self.moedas = [Coin(350, CHAO_Y - 100)]
             self.flag = Flag(1000, CHAO_Y - 15)
 
     def draw(self, window):
@@ -92,6 +115,10 @@ class Game:
 
         # Chão
         pg.draw.rect(window, VERDE, (0 - camera_x, self.ALTURA - 30, 2000, 30))
+        if self.fase_atual == 2:
+            pg.draw.rect(window, AMARELO, (0 - camera_x, self.ALTURA - 30, 2000, 30))
+        if self.fase_atual == 3:
+            pg.draw.rect(window, CINZA, (0 - camera_x, self.ALTURA - 30, 2000, 30))
 
         # Desenha blocos e atualiza animações
         for bloco in self.blocos:
@@ -251,6 +278,9 @@ class Game:
         # Atualiza inimigos
         for goomba in self.goombas:
             goomba.update(2000)
+            for bloco in self.blocos:
+                if goomba.rect.colliderect(bloco.get_rect()):
+                    goomba.direction *= -1
             if goomba and not goomba.alive:
                 goomba = None
         self.goombas = [g for g in self.goombas]
@@ -258,8 +288,37 @@ class Game:
         # Atualiza cogumelo
         if self.cogumelo:
             self.cogumelo.update(2000)
+
+            if not self.cogumelo.subindo:
+                # Movimento horizontal
+                for bloco in self.blocos:
+                    if self.cogumelo.rect.colliderect(bloco.get_rect()):
+                        if self.cogumelo.direction > 0:
+                            self.cogumelo.rect.right = bloco.get_rect().left
+                        elif self.cogumelo.direction < 0:
+                            self.cogumelo.rect.left = bloco.get_rect().right
+                        self.cogumelo.direction *= -1
+
+                # Gravidade
+                self.cogumelo.vel_y += self.cogumelo.gravidade
+                self.cogumelo.rect.y += self.cogumelo.vel_y
+
+                # Colisão vertical
+                for bloco in self.blocos:
+                    if self.cogumelo.rect.colliderect(bloco.get_rect()):
+                        if self.cogumelo.vel_y > 0:
+                            self.cogumelo.rect.bottom = bloco.get_rect().top
+                            self.cogumelo.vel_y = 0
+                        elif self.cogumelo.vel_y < 0:
+                            self.cogumelo.rect.top = bloco.get_rect().bottom
+                            self.cogumelo.vel_y = 0
+
+            # Colisão com o chão
             if self.cogumelo.rect.bottom >= CHAO_Y:
                 self.cogumelo.rect.bottom = CHAO_Y
+                self.cogumelo.vel_y = 0
+
+            # Colisão com o Mario
             if mario_real_rect.colliderect(self.cogumelo.rect):
                 if self.cogumelo.tipo == "vida":
                     self.vidas += 1
@@ -270,6 +329,9 @@ class Game:
         # Atualiza estrela
         if self.estrela:
             self.estrela.update(2000)
+            for bloco in self.blocos:
+                if self.estrela.rect.colliderect(bloco.get_rect()):
+                    self.estrela.direction *= -1
             if mario_real_rect.colliderect(self.estrela.rect):
                 print("Estrela coletada! Mario invencível?")
                 self.mario.marioestrela()
@@ -317,6 +379,9 @@ class Game:
         # Atualiza KoopasTroopas
         for koopa in self.koopas:
             koopa.update(2000)
+            for bloco in self.blocos:
+                if koopa.rect.colliderect(bloco.get_rect()):
+                    koopa.direction *= -1
         self.koopas = [k for k in self.koopas if k.visible]
 
         for coin in self.moedas[:]:
@@ -368,11 +433,13 @@ class Game:
                             print("MARIO MORREU")
                             self.carregar_fase(1)
                             self.vidas = 3
+                            self.fase_atual = 1
 
         if self.flag and mario_real_rect.colliderect(self.flag.rect):
             if self.fase_atual >= self.total_fases:
                 print("Jogo concluído!")
-                # Aqui você pode encerrar ou resetar o jogo
+                if self.callback_encerrar:
+                    self.callback_encerrar()
             else:
                 self.fase_atual += 1
                 self.carregar_fase(self.fase_atual)
