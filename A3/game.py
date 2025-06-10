@@ -1,3 +1,4 @@
+
 import pygame as pg
 from obj import Mario, Bloco, Cogumelo, QuestionBlock, Estrela, FlorDeFogo, Fireball, Coin, Flag
 from enemies import Goomba, Bowser, KoopaTroopa
@@ -81,7 +82,14 @@ class Game:
                            QuestionBlock(350, CHAO_Y - 61, contem_cogumelo=True),
                            QuestionBlock(700, CHAO_Y - 61, contem_cogumelo_vida=True),
                            Bloco(382,CHAO_Y - 61),
-                           Bloco(550, CHAO_Y - 16)]
+                           Bloco(550, CHAO_Y - 16),
+                           Bloco(850, CHAO_Y - 16),
+                           Bloco(866, CHAO_Y - 16),
+                           Bloco(866, CHAO_Y - 32),
+                           Bloco(882, CHAO_Y - 16),
+                           Bloco(882, CHAO_Y - 32),
+                           Bloco(882, CHAO_Y - 48),
+                           ]
             self.goombas = [Goomba(300, CHAO_Y - 15),
                             Goomba(600, CHAO_Y - 15)]
             self.moedas = [Coin(400, CHAO_Y - 100)]
@@ -119,7 +127,7 @@ class Game:
         camera_x = self.mario_world_x - self.mario_screen_x
 
         # Chão
-        pg.draw.rect(window, VERDE, (0 - camera_x, self.ALTURA - 30, 2000, 30))
+        pg.draw.rect(window, VERDE, (0 - camera_x, self.ALTURA - 30, 4000, 30))
         if self.fase_atual == 2:
             pg.draw.rect(window, AMARELO, (0 - camera_x, self.ALTURA - 30, 2000, 30))
         if self.fase_atual == 3:
