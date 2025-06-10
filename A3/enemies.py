@@ -66,7 +66,7 @@ class Bowser(pg.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=(x, y))
 
         self.direction = -1
-        self.speed = 1
+        self.speed = 4
         self.alive = True
         self.death_timer = 0
 
