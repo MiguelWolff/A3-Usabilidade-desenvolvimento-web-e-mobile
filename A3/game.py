@@ -80,7 +80,8 @@ class Game:
                            Bloco(366, CHAO_Y -61),
                            QuestionBlock(350, CHAO_Y - 61, contem_cogumelo=True),
                            QuestionBlock(700, CHAO_Y - 61, contem_cogumelo_vida=True),
-                           Bloco(400,CHAO_Y - 16)]
+                           Bloco(382,CHAO_Y - 61),
+                           Bloco(550, CHAO_Y - 16)]
             self.goombas = [Goomba(300, CHAO_Y - 15),
                             Goomba(600, CHAO_Y - 15)]
             self.moedas = [Coin(400, CHAO_Y - 100)]
