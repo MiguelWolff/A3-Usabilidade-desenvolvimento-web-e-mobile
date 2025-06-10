@@ -265,7 +265,7 @@ class Cogumelo:
         self.image = pg.image.load(f"Assets/Sprites/{nome_arquivo}").convert_alpha()
         self.rect = self.image.get_rect(topleft=(x, y))
         self.speed = 2
-        self.direction = 1
+        self.direction = -1
         self.subindo = True  # Indica se está saindo do bloco
         self.alvo_y = y - 32  # Altura alvo ao subir
         self.vel_y = 0
