@@ -117,6 +117,7 @@ class Game:
                            Bloco(1138, CHAO_Y - 96),
                            Bloco(1154, CHAO_Y - 96),
                            Bloco(1170, CHAO_Y - 96),
+                           QuestionBlock(1170, CHAO_Y - 157, contem_moeda=True),
                            Bloco(1186, CHAO_Y - 96),
                            Bloco(1202, CHAO_Y - 96),
                            Bloco(1218, CHAO_Y - 96),
@@ -129,11 +130,47 @@ class Game:
                            Bloco(1330, CHAO_Y - 96),
                            Bloco(1330, CHAO_Y - 112),
                            Bloco(1346, CHAO_Y - 96),
+                           Bloco(1394, CHAO_Y - 80),
+                           Bloco(1394, CHAO_Y - 64),
+                           Bloco(1394, CHAO_Y - 48),
+                           Bloco(1394, CHAO_Y - 32),
+                           Bloco(1394, CHAO_Y - 16),
+                           Bloco(1410, CHAO_Y - 64),
+                           Bloco(1410, CHAO_Y - 48),
+                           Bloco(1410, CHAO_Y - 32),
+                           Bloco(1410, CHAO_Y - 16),
+                           Bloco(1426, CHAO_Y - 48),
+                           Bloco(1426, CHAO_Y - 32),
+                           Bloco(1426, CHAO_Y - 16),
+                           Bloco(1442, CHAO_Y - 32),
+                           Bloco(1442, CHAO_Y - 16),
+                           Bloco(1458, CHAO_Y - 16),
+                           QuestionBlock(1602, CHAO_Y - 61, contem_flor=True),
+                           Bloco(2500, CHAO_Y - 32), 
+                           Bloco(2500, CHAO_Y), 
+                           Bloco(2500, CHAO_Y - 16), 
+                           Bloco(2500, CHAO_Y - 48), 
+                           Bloco(2500, CHAO_Y + 16), 
+                           Bloco(2500, CHAO_Y - 64), 
+                           Bloco(2500, CHAO_Y - 80),
+                           Bloco(2500, CHAO_Y - 96),
                            ]
             self.goombas = [Goomba(300, CHAO_Y - 15),
-                            Goomba(600, CHAO_Y - 15)]
-            self.moedas = [Coin(400, CHAO_Y - 100)]
-            self.flag = Flag(3500, CHAO_Y - 15)
+                            Goomba(600, CHAO_Y - 15),
+                            Goomba(1650, CHAO_Y - 15)]
+            self.koopas = [KoopaTroopa(1314, CHAO_Y - 120, tipo="vermelho"),
+                           KoopaTroopa(1282, CHAO_Y - 120, tipo="verde_casco_azul"),
+                           KoopaTroopa(1250, CHAO_Y - 25, tipo="verde"), 
+                           KoopaTroopa(1314, CHAO_Y - 25, tipo="verde"), 
+                           ]
+            self.moedas = [Coin(400, CHAO_Y - 100),
+                           Coin(1650, CHAO_Y - 50),
+                           Coin(1666, CHAO_Y - 50),
+                           Coin(1682, CHAO_Y - 50),
+                           Coin(1698, CHAO_Y - 50),
+                           Coin(1714, CHAO_Y - 50),
+                           ]
+            self.flag = Flag(2000, CHAO_Y - 15)
 
         elif fase == 2:
             self.blocos = [Bloco(-16, CHAO_Y - 32, tipo="dark"), 
@@ -144,10 +181,24 @@ class Game:
                            Bloco(-16, CHAO_Y - 64, tipo="dark"), 
                            Bloco(-16, CHAO_Y - 80, tipo="dark"),
                            Bloco(-16, CHAO_Y - 96, tipo="dark"),
-                           QuestionBlock(250, CHAO_Y - 48, tema="dark", contem_flor=True)]
-            self.koopas = [KoopaTroopa(450, CHAO_Y - 25)]
+                           Bloco(600, CHAO_Y - 45, tipo="dark"),
+                           Bloco(800, CHAO_Y - 45, tipo="dark"),
+                           Bloco(400, CHAO_Y - 45, tipo="dark"),
+                           Bloco(200, CHAO_Y - 45, tipo="dark"),
+                           Bloco(2500, CHAO_Y - 32, tipo="dark"), 
+                           Bloco(2500, CHAO_Y, tipo="dark"), 
+                           Bloco(2500, CHAO_Y - 16, tipo="dark"), 
+                           Bloco(2500, CHAO_Y - 48, tipo="dark"), 
+                           Bloco(2500, CHAO_Y + 16, tipo="dark"), 
+                           Bloco(2500, CHAO_Y - 64, tipo="dark"), 
+                           Bloco(2500, CHAO_Y - 80, tipo="dark"),
+                           Bloco(2500, CHAO_Y - 96, tipo="dark"),
+                           QuestionBlock(1426, CHAO_Y - 48, tema="dark", contem_flor=True)]
+            self.koopas = [KoopaTroopa(450, CHAO_Y - 25, tipo="vermelho"),
+                           KoopaTroopa(1000, CHAO_Y - 25, tipo="vermelho"),
+                           ]
             self.moedas = [Coin(300, CHAO_Y - 100)]
-            self.flag = Flag(800, CHAO_Y - 15)
+            self.flag = Flag(2000, CHAO_Y - 15)
 
         elif fase == 3:
             self.blocos = [Bloco(-16, CHAO_Y - 32, tipo="castle"), 
@@ -159,7 +210,16 @@ class Game:
                            Bloco(-16, CHAO_Y - 80, tipo="castle"),
                            Bloco(-16, CHAO_Y - 96, tipo="castle"),
                            QuestionBlock(150, CHAO_Y - 48, tema="castle", contem_estrela=True),
-                           Bloco(600, CHAO_Y - 32, tipo="castle")]
+                           Bloco(600, CHAO_Y - 32, tipo="castle"),
+                           Bloco(2500, CHAO_Y - 32, tipo="castle"), 
+                           Bloco(2500, CHAO_Y, tipo="castle"), 
+                           Bloco(2500, CHAO_Y - 16, tipo="castle"), 
+                           Bloco(2500, CHAO_Y - 48, tipo="castle"), 
+                           Bloco(2500, CHAO_Y + 16, tipo="castle"), 
+                           Bloco(2500, CHAO_Y - 64, tipo="castle"), 
+                           Bloco(2500, CHAO_Y - 80, tipo="castle"),
+                           Bloco(2500, CHAO_Y - 96, tipo="castle"),
+                           ]
             self.bowser = Bowser(600, self.ALTURA - 62)
             self.moedas = [Coin(350, CHAO_Y - 100)]
             self.flag = Flag(1000, CHAO_Y - 15)
@@ -169,11 +229,11 @@ class Game:
         camera_x = self.mario_world_x - self.mario_screen_x
 
         # Chão
-        pg.draw.rect(window, VERDE, (0 - camera_x, self.ALTURA - 30, 4000, 30))
+        pg.draw.rect(window, VERDE, (0 - camera_x, self.ALTURA - 30, 2500, 30))
         if self.fase_atual == 2:
-            pg.draw.rect(window, AMARELO, (0 - camera_x, self.ALTURA - 30, 2000, 30))
+            pg.draw.rect(window, AMARELO, (0 - camera_x, self.ALTURA - 30, 2500, 30))
         if self.fase_atual == 3:
-            pg.draw.rect(window, CINZA, (0 - camera_x, self.ALTURA - 30, 2000, 30))
+            pg.draw.rect(window, CINZA, (0 - camera_x, self.ALTURA - 30, 2500, 30))
 
         # Desenha blocos e atualiza animações
         for bloco in self.blocos:
