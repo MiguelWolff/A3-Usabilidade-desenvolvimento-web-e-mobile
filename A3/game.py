@@ -1,4 +1,3 @@
-
 import pygame as pg
 from obj import Mario, Bloco, Cogumelo, QuestionBlock, Estrela, FlorDeFogo, Fireball, Coin, Flag
 from enemies import Goomba, Bowser, KoopaTroopa
@@ -76,6 +75,7 @@ class Game:
                            Bloco(-16, CHAO_Y + 16), 
                            Bloco(-16, CHAO_Y - 64), 
                            Bloco(-16, CHAO_Y - 80),
+                           Bloco(-16, CHAO_Y - 96),
                            Bloco(318, CHAO_Y -61),
                            Bloco(334, CHAO_Y -61),
                            Bloco(366, CHAO_Y -61),
@@ -89,35 +89,77 @@ class Game:
                            Bloco(882, CHAO_Y - 16),
                            Bloco(882, CHAO_Y - 32),
                            Bloco(882, CHAO_Y - 48),
+                           Bloco(898, CHAO_Y - 16),
+                           Bloco(898, CHAO_Y - 32),
+                           Bloco(898, CHAO_Y - 48),
+                           Bloco(898, CHAO_Y - 64),
+                           Bloco(914, CHAO_Y - 16),
+                           Bloco(914, CHAO_Y - 32),
+                           Bloco(914, CHAO_Y - 48),
+                           Bloco(914, CHAO_Y - 64),
+                           Bloco(914, CHAO_Y - 80),
+                           Bloco(930, CHAO_Y - 16),
+                           Bloco(930, CHAO_Y - 32),
+                           Bloco(930, CHAO_Y - 48),
+                           Bloco(930, CHAO_Y - 64),
+                           Bloco(930, CHAO_Y - 80),
+                           Bloco(930, CHAO_Y - 96),
+                           Bloco(994, CHAO_Y - 96),
+                           Bloco(1010, CHAO_Y - 96),
+                           Bloco(1010, CHAO_Y - 112),
+                           Bloco(1026, CHAO_Y - 96),
+                           Bloco(1042, CHAO_Y - 96),
+                           Bloco(1058, CHAO_Y - 96),
+                           Bloco(1074, CHAO_Y - 96),
+                           Bloco(1090, CHAO_Y - 96),
+                           Bloco(1106, CHAO_Y - 96),
+                           Bloco(1122, CHAO_Y - 96),
+                           Bloco(1138, CHAO_Y - 96),
+                           Bloco(1154, CHAO_Y - 96),
+                           Bloco(1170, CHAO_Y - 96),
+                           Bloco(1186, CHAO_Y - 96),
+                           Bloco(1202, CHAO_Y - 96),
+                           Bloco(1218, CHAO_Y - 96),
+                           Bloco(1234, CHAO_Y - 96),
+                           Bloco(1250, CHAO_Y - 96),
+                           Bloco(1266, CHAO_Y - 96),
+                           Bloco(1282, CHAO_Y - 96),
+                           Bloco(1298, CHAO_Y - 96),
+                           Bloco(1314, CHAO_Y - 96),
+                           Bloco(1330, CHAO_Y - 96),
+                           Bloco(1330, CHAO_Y - 112),
+                           Bloco(1346, CHAO_Y - 96),
                            ]
             self.goombas = [Goomba(300, CHAO_Y - 15),
                             Goomba(600, CHAO_Y - 15)]
             self.moedas = [Coin(400, CHAO_Y - 100)]
-            self.flag = Flag(1800, CHAO_Y - 15)
+            self.flag = Flag(3500, CHAO_Y - 15)
 
         elif fase == 2:
-            self.blocos = [Bloco(-16, CHAO_Y - 32), 
-                           Bloco(-16, CHAO_Y), 
-                           Bloco(-16, CHAO_Y - 16), 
-                           Bloco(-16, CHAO_Y - 48), 
-                           Bloco(-16, CHAO_Y + 16), 
-                           Bloco(-16, CHAO_Y - 64), 
-                           Bloco(-16, CHAO_Y - 80),
-                           QuestionBlock(250, CHAO_Y - 48, contem_flor=True)]
+            self.blocos = [Bloco(-16, CHAO_Y - 32, tipo="dark"), 
+                           Bloco(-16, CHAO_Y, tipo="dark"), 
+                           Bloco(-16, CHAO_Y - 16, tipo="dark"), 
+                           Bloco(-16, CHAO_Y - 48, tipo="dark"), 
+                           Bloco(-16, CHAO_Y + 16, tipo="dark"), 
+                           Bloco(-16, CHAO_Y - 64, tipo="dark"), 
+                           Bloco(-16, CHAO_Y - 80, tipo="dark"),
+                           Bloco(-16, CHAO_Y - 96, tipo="dark"),
+                           QuestionBlock(250, CHAO_Y - 48, tema="dark", contem_flor=True)]
             self.koopas = [KoopaTroopa(450, CHAO_Y - 25)]
             self.moedas = [Coin(300, CHAO_Y - 100)]
             self.flag = Flag(800, CHAO_Y - 15)
 
         elif fase == 3:
-            self.blocos = [Bloco(-16, CHAO_Y - 32), 
-                           Bloco(-16, CHAO_Y), 
-                           Bloco(-16, CHAO_Y - 16), 
-                           Bloco(-16, CHAO_Y - 48), 
-                           Bloco(-16, CHAO_Y + 16), 
-                           Bloco(-16, CHAO_Y - 64), 
-                           Bloco(-16, CHAO_Y - 80),
-                           QuestionBlock(150, CHAO_Y - 48, contem_estrela=True),
-                           Bloco(600, CHAO_Y - 32)]
+            self.blocos = [Bloco(-16, CHAO_Y - 32, tipo="castle"), 
+                           Bloco(-16, CHAO_Y, tipo="castle"), 
+                           Bloco(-16, CHAO_Y - 16, tipo="castle"), 
+                           Bloco(-16, CHAO_Y - 48, tipo="castle"), 
+                           Bloco(-16, CHAO_Y + 16, tipo="castle"), 
+                           Bloco(-16, CHAO_Y - 64, tipo="castle"), 
+                           Bloco(-16, CHAO_Y - 80, tipo="castle"),
+                           Bloco(-16, CHAO_Y - 96, tipo="castle"),
+                           QuestionBlock(150, CHAO_Y - 48, tema="castle", contem_estrela=True),
+                           Bloco(600, CHAO_Y - 32, tipo="castle")]
             self.bowser = Bowser(600, self.ALTURA - 62)
             self.moedas = [Coin(350, CHAO_Y - 100)]
             self.flag = Flag(1000, CHAO_Y - 15)
